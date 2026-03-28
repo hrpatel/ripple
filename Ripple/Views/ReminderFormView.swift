@@ -53,7 +53,7 @@ struct ReminderFormView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Cancel / title header
+            // Header: Cancel + title on one row
             HStack {
                 Button(action: { dismiss() }) {
                     HStack(spacing: 4) {
@@ -64,32 +64,27 @@ struct ReminderFormView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.blue)
                 Spacer()
+                Text(isEditing ? "Edit Reminder" : "Add Reminder")
+                    .font(.headline)
+                Spacer()
             }
             .padding(.horizontal)
-            .padding(.top, 12)
-            .padding(.bottom, 4)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
 
-            Text(isEditing ? "Edit Reminder" : "Add Reminder")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    titleSection
-                    typeSection
-                    if type == .recurring {
-                        recurringSection
-                    } else {
-                        oneTimeSection
-                    }
-                    deliverySection
-                    snoozeSection
+            VStack(alignment: .leading, spacing: 10) {
+                titleSection
+                typeSection
+                if type == .recurring {
+                    recurringSection
+                } else {
+                    oneTimeSection
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 16)
+                deliverySection
+                snoozeSection
             }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
 
             Divider()
             footerSection
@@ -126,22 +121,25 @@ struct ReminderFormView: View {
     // MARK: - Recurring fields
 
     private var recurringSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             // Interval
-            Text("Interval")
-                .font(.subheadline)
-                .fontWeight(.medium)
+            HStack {
+                Text("Interval")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
 
-            Picker("Interval", selection: $intervalSelection) {
-                ForEach(0..<intervalPresets.count, id: \.self) { idx in
-                    Text(intervalPresets[idx] >= 60
-                        ? "\(intervalPresets[idx] / 60) hr"
-                        : "\(intervalPresets[idx]) min"
-                    ).tag(idx)
+                Picker("Interval", selection: $intervalSelection) {
+                    ForEach(0..<intervalPresets.count, id: \.self) { idx in
+                        Text(intervalPresets[idx] >= 60
+                            ? "\(intervalPresets[idx] / 60) hr"
+                            : "\(intervalPresets[idx]) min"
+                        ).tag(idx)
+                    }
+                    Text("Custom").tag(-1)
                 }
-                Text("Custom").tag(-1)
+                .pickerStyle(.menu)
+                .labelsHidden()
             }
-            .pickerStyle(.menu)
 
             if intervalSelection == -1 {
                 HStack {
@@ -183,7 +181,6 @@ struct ReminderFormView: View {
             Text("Active days")
                 .font(.subheadline)
                 .fontWeight(.medium)
-
             HStack(spacing: 6) {
                 ForEach(Weekday.allCases, id: \.self) { day in
                     Button(action: { toggleDay(day) }) {
@@ -220,7 +217,7 @@ struct ReminderFormView: View {
     // MARK: - Delivery
 
     private var deliverySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("Delivery")
                 .font(.subheadline)
                 .fontWeight(.medium)

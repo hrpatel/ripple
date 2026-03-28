@@ -12,7 +12,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupMenubarIcon() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "bell.fill", accessibilityDescription: "Ripple")
             button.action = #selector(togglePopover)
@@ -29,8 +29,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    @objc func togglePopover() {
-        guard let button = statusItem.button else { return }
+    @objc private func togglePopover() {
+        guard let button = statusItem.button, popover != nil else { return }
         if popover.isShown {
             popover.performClose(nil)
         } else {

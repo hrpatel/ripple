@@ -117,6 +117,33 @@ final class SchedulerEngineTests: XCTestCase {
         XCTAssertEqual(spy.delivered.count, 1)
     }
 
+    // MARK: - Task 4: Snooze tests
+
+    func test_recurring_skipsWhenSnoozed() {
+        let reminder = makeRecurring(intervalMinutes: 30)
+        store.add(reminder)
+        engine.snooze(reminder.id)
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+    }
+
+    func test_recurring_firesAfterSnoozeExpires() {
+        let base = Date()
+        currentTime = base
+
+        let reminder = makeRecurring(intervalMinutes: 30)
+        store.add(reminder)
+
+        engine.snooze(reminder.id)
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+
+        // Advance 6 minutes — past the 5-minute snooze window
+        currentTime = base.addingTimeInterval(6 * 60)
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 1)
+    }
+
     func test_disabled_neverFires() {
         var reminder = makeRecurring(intervalMinutes: 30)
         reminder.isEnabled = false

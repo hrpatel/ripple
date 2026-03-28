@@ -35,9 +35,11 @@ final class SchedulerEngine {
 
     func checkAndFire() {
         let current = now()
+        snoozedUntil = snoozedUntil.filter { $0.value > current }
 
         for reminder in store.reminders {
             guard reminder.isEnabled else { continue }
+            guard snoozedUntil[reminder.id] == nil else { continue }
 
             switch reminder.type {
             case .recurring:

@@ -1,17 +1,10 @@
-//
-//  RippleApp.swift
-//  Ripple
-//
-//  Created by Hrdayesh Patel on 2026-03-27.
-//
-
 import SwiftUI
 
 @main
 struct RippleApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+        Settings { EmptyView() }
     }
 }

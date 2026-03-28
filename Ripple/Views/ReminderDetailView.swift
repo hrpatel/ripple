@@ -3,9 +3,20 @@ import SwiftUI
 struct ReminderDetailView: View {
     let reminder: Reminder
     @Environment(\.schedulerEngine) var engine
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Back button
+            Button(action: { dismiss() }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "chevron.left")
+                    Text("Back")
+                }
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.blue)
+
             // Header
             VStack(alignment: .leading, spacing: 4) {
                 Text(reminder.title)

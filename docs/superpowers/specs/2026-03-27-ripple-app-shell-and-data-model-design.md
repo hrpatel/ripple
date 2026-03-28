@@ -142,7 +142,7 @@ An `@MainActor` `ObservableObject` that is the single source of truth for remind
 - Private `save()` — calls `PersistenceManager.save(reminders)`
 
 ### Wiring into the App
-`AppDelegate` receives the `ReminderStore` from the environment (via a property set during setup in `RippleApp`) and passes it into `ContentView` via `.environmentObject(store)` on the `NSHostingController`.
+In `RippleApp.swift`, the `ReminderStore` is created as a `@StateObject`. Because `AppDelegate` is initialized by the system (not by us), we can't pass `store` via a normal init parameter. Instead, we give `AppDelegate` a `var store: ReminderStore?` property, and in `RippleApp.body` we set `appDelegate.store = store` so the delegate has a reference to it. The delegate then passes `store` into `ContentView` via `.environmentObject(store)` on the `NSHostingController`, making it available to all SwiftUI views inside the popover.
 
 ### Success Criteria
 - App compiles with all model types defined

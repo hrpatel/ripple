@@ -20,6 +20,7 @@
 		391EAEDD2F7773C000373F4E /* Ripple.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ripple.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		391EAEED2F77758200373F4E /* Ripple.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Ripple.xcodeproj; sourceTree = "<group>"; };
 		391EAEFD2F7779B800373F4E /* RippleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RippleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		395E326F2F78177B002D4685 /* Ripple.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Ripple.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -72,6 +73,11 @@
 			sourceTree = "<group>";
 		};
 		391EAEEF2F77758200373F4E /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		395E32712F78177B002D4685 /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
 			sourceTree = "<group>";
@@ -159,6 +165,10 @@
 				{
 					ProductGroup = 391EAEEF2F77758200373F4E /* Products */;
 					ProjectRef = 391EAEED2F77758200373F4E /* Ripple.xcodeproj */;
+				},
+				{
+					ProductGroup = 395E32712F78177B002D4685 /* Products */;
+					ProjectRef = 395E326F2F78177B002D4685 /* Ripple.xcodeproj */;
 				},
 			);
 			projectRoot = "";

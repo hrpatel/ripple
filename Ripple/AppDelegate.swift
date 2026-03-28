@@ -10,8 +10,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenubarIcon()
-        setupPopover()
         setupScheduler()
+        setupPopover()
     }
 
     private func setupMenubarIcon() {
@@ -28,7 +28,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentSize = NSSize(width: 320, height: 400)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(
-            rootView: ContentView().environment(store)
+            rootView: ContentView()
+                .environment(store)
+                .environment(\.schedulerEngine, engine)
         )
     }
 

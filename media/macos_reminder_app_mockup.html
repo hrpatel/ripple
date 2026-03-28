@@ -1,0 +1,212 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.device{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1.5rem;display:flex;flex-direction:column;gap:1.5rem}
+.menubar{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:6px 12px;display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.menubar-left{display:flex;gap:16px;color:var(--color-text-secondary)}
+.menubar-right{display:flex;align-items:center;gap:12px;color:var(--color-text-secondary)}
+.menubar-icon{display:flex;align-items:center;gap:5px;font-weight:500;color:var(--color-text-primary);cursor:pointer;padding:3px 8px;border-radius:6px;transition:background .15s}
+.menubar-icon:hover{background:var(--color-background-secondary)}
+.bell-dot{width:7px;height:7px;border-radius:50%;background:#D85A30;display:inline-block;margin-left:1px;vertical-align:top;margin-top:1px}
+
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;box-shadow:none;width:320px;align-self:flex-end;margin-right:2rem}
+.panel-header{padding:14px 16px 10px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.panel-header h2{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.add-btn{font-size:12px;padding:4px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);cursor:pointer}
+.add-btn:hover{background:var(--color-background-secondary)}
+
+.tabs{display:flex;padding:8px 16px 0;gap:4px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tab{font-size:12px;padding:5px 10px;border-radius:6px 6px 0 0;cursor:pointer;color:var(--color-text-secondary);border:0.5px solid transparent;border-bottom:none;position:relative;bottom:-0.5px}
+.tab.active{color:var(--color-text-primary);font-weight:500;background:var(--color-background-primary);border-color:var(--color-border-tertiary)}
+
+.reminder-list{padding:10px 0}
+.reminder-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .1s;position:relative}
+.reminder-item:hover{background:var(--color-background-secondary)}
+.reminder-item.active-item{background:var(--color-background-secondary)}
+.toggle{width:32px;height:18px;border-radius:9px;border:none;cursor:pointer;transition:background .2s;flex-shrink:0;position:relative}
+.toggle.on{background:#1D9E75}
+.toggle.off{background:var(--color-border-secondary)}
+.toggle::after{content:'';position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s}
+.toggle.on::after{left:16px}
+.toggle.off::after{left:2px}
+.r-info{flex:1;min-width:0}
+.r-title{font-size:13px;font-weight:500;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-sub{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+.r-badge{font-size:10px;padding:2px 7px;border-radius:var(--border-radius-md);flex-shrink:0}
+.badge-recurring{background:#E1F5EE;color:#0F6E56}
+.badge-once{background:#E6F1FB;color:#185FA5}
+.next-badge{font-size:10px;color:var(--color-text-tertiary)}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:4px 0}
+
+.detail-panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;display:none;flex-direction:column;gap:12px}
+.detail-panel.show{display:flex}
+.detail-panel h3{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.field-row{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:11px;color:var(--color-text-secondary);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.field-val{font-size:13px;color:var(--color-text-primary)}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;padding:3px 8px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+.tag.on{background:#E1F5EE;color:#0F6E56;border-color:#5DCAA5}
+.edit-btn{font-size:12px;padding:6px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);cursor:pointer;align-self:flex-start}
+.edit-btn:hover{background:var(--color-background-secondary)}
+
+.notif{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;width:300px;align-self:flex-end}
+.notif-icon{width:32px;height:32px;border-radius:8px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-icon svg{width:16px;height:16px;stroke:#0F6E56;fill:none;stroke-width:2}
+.notif-body{flex:1}
+.notif-app{font-size:10px;color:var(--color-text-secondary);margin-bottom:2px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.notif-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.notif-msg{font-size:12px;color:var(--color-text-secondary);margin-top:1px}
+.notif-time{font-size:10px;color:var(--color-text-tertiary);margin-left:auto;white-space:nowrap}
+
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;padding:0 0 6px 0}
+</style>
+
+<div class="device">
+
+  <div class="section-label">Menubar</div>
+  <div class="menubar">
+    <div class="menubar-left">
+      <span>Finder</span><span>File</span><span>Edit</span><span>View</span>
+    </div>
+    <div class="menubar-right">
+      <span style="font-size:12px;color:var(--color-text-tertiary)">Wed 9:41 AM</span>
+      <div class="menubar-icon" onclick="togglePanel()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1a5 5 0 0 1 5 5c0 3 1.5 4 1.5 4h-13S3 9 3 6a5 5 0 0 1 5-5zm-1 11h2a1 1 0 0 1-2 0z"/></svg>
+        <div class="bell-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+    <div>
+      <div class="section-label">Dropdown panel</div>
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Reminders</h2>
+          <button class="add-btn" onclick="sendPrompt('How should the Add Reminder form work?')">+ add ↗</button>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'active')">Active</div>
+          <div class="tab" onclick="switchTab(this,'all')">All</div>
+          <div class="tab" onclick="switchTab(this,'paused')">Paused</div>
+        </div>
+        <div class="reminder-list" id="list">
+          <div class="reminder-item" onclick="showDetail(0)">
+            <button class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on');this.classList.toggle('off')"></button>
+            <div class="r-info">
+              <div class="r-title">Stand up</div>
+              <div class="r-sub">Every 45 min · 9am–6pm</div>
+            </div>
+            <span class="r-badge badge-recurring">recurring</span>
+          </div>
+          <div class="divider"></div>
+          <div class="reminder-item" onclick="showDetail(1)">
+            <button class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on');this.classList.toggle('off')"></button>
+            <div class="r-info">
+              <div class="r-title">Take a break</div>
+              <div class="r-sub">Every 90 min · all day</div>
+            </div>
+            <span class="r-badge badge-recurring">recurring</span>
+          </div>
+          <div class="divider"></div>
+          <div class="reminder-item" onclick="showDetail(2)">
+            <button class="toggle on" onclick="event.stopPropagation();this.classList.toggle('on');this.classList.toggle('off')"></button>
+            <div class="r-info">
+              <div class="r-title">Drink water</div>
+              <div class="r-sub">Every 30 min</div>
+            </div>
+            <span class="r-badge badge-recurring">recurring</span>
+          </div>
+          <div class="divider"></div>
+          <div class="reminder-item" onclick="showDetail(3)">
+            <button class="toggle off" onclick="event.stopPropagation();this.classList.toggle('on');this.classList.toggle('off')"></button>
+            <div class="r-info">
+              <div class="r-title">Team standup</div>
+              <div class="r-sub">Today at 10:00 AM</div>
+            </div>
+            <span class="r-badge badge-once">one-time</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Reminder detail</div>
+      <div class="detail-panel show" id="detail">
+        <div>
+          <h3 id="d-title">Stand up</h3>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px" id="d-sub">Recurring reminder</div>
+        </div>
+        <div class="field-grid">
+          <div class="field-row">
+            <div class="field-label">Interval</div>
+            <div class="field-val" id="d-interval">Every 45 min</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Active hours</div>
+            <div class="field-val" id="d-hours">9am – 6pm</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Days</div>
+            <div class="field-val" id="d-days">Mon – Fri</div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Next trigger</div>
+            <div class="field-val" id="d-next">10:15 AM</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label">Delivery</div>
+          <div class="tag-row">
+            <span class="tag on" id="d-notif">Notification</span>
+            <span class="tag on" id="d-sound">Sound</span>
+            <span class="tag on" id="d-icon">Menubar icon</span>
+          </div>
+        </div>
+        <button class="edit-btn" onclick="sendPrompt('Show me the edit reminder form for Stand up')">Edit reminder ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">System notification</div>
+    <div class="notif">
+      <div class="notif-icon">
+        <svg viewBox="0 0 16 16"><path d="M8 1a5 5 0 0 1 5 5c0 3 1.5 4 1.5 4h-13S3 9 3 6a5 5 0 0 1 5-5zm-1 11h2a1 1 0 0 1-2 0z"/></svg>
+      </div>
+      <div class="notif-body">
+        <div class="notif-app">Reminders</div>
+        <div class="notif-title">Time to stand up</div>
+        <div class="notif-msg">You've been sitting for 45 minutes.</div>
+      </div>
+      <div class="notif-time">now</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const details=[
+  {title:"Stand up",sub:"Recurring reminder",interval:"Every 45 min",hours:"9am – 6pm",days:"Mon – Fri",next:"10:15 AM"},
+  {title:"Take a break",sub:"Recurring reminder",interval:"Every 90 min",hours:"All day",days:"Mon – Fri",next:"11:30 AM"},
+  {title:"Drink water",sub:"Recurring reminder",interval:"Every 30 min",hours:"All day",days:"Every day",next:"10:00 AM"},
+  {title:"Team standup",sub:"One-time reminder",interval:"Once",hours:"10:00 AM",days:"Today",next:"10:00 AM"}
+];
+function showDetail(i){
+  const d=details[i];
+  document.getElementById('d-title').textContent=d.title;
+  document.getElementById('d-sub').textContent=d.sub;
+  document.getElementById('d-interval').textContent=d.interval;
+  document.getElementById('d-hours').textContent=d.hours;
+  document.getElementById('d-days').textContent=d.days;
+  document.getElementById('d-next').textContent=d.next;
+  document.querySelectorAll('.reminder-item').forEach((el,j)=>el.classList.toggle('active-item',j===i));
+}
+function switchTab(el,tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+showDetail(0);
+</script>

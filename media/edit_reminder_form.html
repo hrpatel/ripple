@@ -1,0 +1,181 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:1.5rem;display:flex;justify-content:center}
+.form-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);width:340px;overflow:hidden}
+.form-header{padding:14px 16px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between}
+.form-header h2{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.close-btn{width:22px;height:22px;border-radius:50%;border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;color:var(--color-text-secondary);font-size:13px;display:flex;align-items:center;justify-content:center}
+.form-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em}
+.field input[type=text]{width:100%;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.field input[type=text]:focus{outline:none;border-color:var(--color-border-primary)}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+select{width:100%;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+select:focus{outline:none}
+
+.time-row{display:flex;align-items:center;gap:8px}
+.time-row input[type=time]{flex:1;font-size:13px;padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.time-row input[type=time]:focus{outline:none;border-color:var(--color-border-primary)}
+.time-sep{font-size:12px;color:var(--color-text-secondary)}
+
+.days-row{display:flex;gap:5px}
+.day-btn{width:32px;height:32px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:transparent;font-size:11px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.day-btn.sel{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.day-btn:hover:not(.sel){background:var(--color-background-secondary)}
+
+.delivery-row{display:flex;flex-direction:column;gap:7px}
+.delivery-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.delivery-left{display:flex;align-items:center;gap:8px}
+.delivery-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.delivery-icon svg{width:13px;height:13px;stroke-width:1.8;fill:none}
+.delivery-name{font-size:13px;color:var(--color-text-primary)}
+.toggle{width:32px;height:18px;border-radius:9px;border:none;cursor:pointer;transition:background .2s;flex-shrink:0;position:relative}
+.toggle.on{background:#1D9E75}
+.toggle.off{background:var(--color-border-secondary)}
+.toggle::after{content:'';position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s}
+.toggle.on::after{left:16px}
+.toggle.off::after{left:2px}
+
+.snooze-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
+.snooze-label{font-size:13px;color:var(--color-text-primary)}
+.snooze-sub{font-size:11px;color:var(--color-text-secondary);margin-top:1px}
+
+.form-footer{padding:12px 16px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:flex-end;gap:8px}
+.btn-cancel{font-size:13px;padding:7px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.btn-cancel:hover{background:var(--color-background-secondary)}
+.btn-save{font-size:13px;padding:7px 16px;border:0.5px solid #1D9E75;border-radius:var(--border-radius-md);background:#1D9E75;color:#fff;cursor:pointer;font-weight:500}
+.btn-save:hover{background:#0F6E56}
+.delete-link{font-size:12px;color:var(--color-text-danger,#A32D2D);cursor:pointer;padding:7px 0;align-self:center;margin-right:auto}
+.delete-link:hover{text-decoration:underline}
+</style>
+
+<div class="wrap">
+  <div class="form-card">
+    <div class="form-header">
+      <h2>Edit reminder</h2>
+      <button class="close-btn">✕</button>
+    </div>
+    <div class="form-body">
+
+      <div class="field">
+        <label>Title</label>
+        <input type="text" value="Stand up" />
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Type</label>
+          <select id="type-sel" onchange="toggleType(this.value)">
+            <option value="recurring" selected>Recurring</option>
+            <option value="once">One-time</option>
+          </select>
+        </div>
+        <div class="field" id="interval-field">
+          <label>Interval</label>
+          <select>
+            <option>Every 15 min</option>
+            <option>Every 30 min</option>
+            <option value="45" selected>Every 45 min</option>
+            <option>Every 60 min</option>
+            <option>Every 90 min</option>
+            <option>Every 2 hours</option>
+            <option>Custom…</option>
+          </select>
+        </div>
+        <div class="field" id="once-field" style="display:none">
+          <label>Date &amp; time</label>
+          <input type="text" placeholder="e.g. Today 10:00 AM" />
+        </div>
+      </div>
+
+      <div class="field" id="hours-field">
+        <label>Active hours</label>
+        <div class="time-row">
+          <input type="time" value="09:00" />
+          <span class="time-sep">to</span>
+          <input type="time" value="18:00" />
+        </div>
+      </div>
+
+      <div class="field" id="days-field">
+        <label>Days</label>
+        <div class="days-row">
+          <button class="day-btn sel">M</button>
+          <button class="day-btn sel">T</button>
+          <button class="day-btn sel">W</button>
+          <button class="day-btn sel">T</button>
+          <button class="day-btn sel">F</button>
+          <button class="day-btn">S</button>
+          <button class="day-btn">S</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Delivery</label>
+        <div class="delivery-row">
+          <div class="delivery-item">
+            <div class="delivery-left">
+              <div class="delivery-icon" style="background:#E1F5EE">
+                <svg viewBox="0 0 16 16" stroke="#0F6E56"><path d="M8 1a5 5 0 0 1 5 5c0 3 1.5 4 1.5 4h-13S3 9 3 6a5 5 0 0 1 5-5zm-1 11h2a1 1 0 0 1-2 0z"/></svg>
+              </div>
+              <span class="delivery-name">Notification</span>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button>
+          </div>
+          <div class="delivery-item">
+            <div class="delivery-left">
+              <div class="delivery-icon" style="background:#E6F1FB">
+                <svg viewBox="0 0 16 16" stroke="#185FA5"><path d="M2 9a6 6 0 1 1 12 0"/><line x1="8" y1="15" x2="8" y2="9"/><circle cx="8" cy="15" r="1" fill="#185FA5" stroke="none"/></svg>
+              </div>
+              <span class="delivery-name">Sound / chime</span>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button>
+          </div>
+          <div class="delivery-item">
+            <div class="delivery-left">
+              <div class="delivery-icon" style="background:#FAEEDA">
+                <svg viewBox="0 0 16 16" stroke="#854F0B"><rect x="1" y="5" width="14" height="7" rx="2"/><line x1="5" y1="5" x2="5" y2="12"/></svg>
+              </div>
+              <span class="delivery-name">Menubar icon flash</span>
+            </div>
+            <button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Snooze</label>
+        <div class="snooze-row">
+          <div>
+            <div class="snooze-label">Allow snooze</div>
+            <div class="snooze-sub">Dismiss for 5 min from notification</div>
+          </div>
+          <button class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button>
+        </div>
+      </div>
+
+    </div>
+    <div class="form-footer">
+      <span class="delete-link">Delete reminder</span>
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save" onclick="sendPrompt('What should happen after saving a reminder?')">Save ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.day-btn').forEach(b=>{
+  b.addEventListener('click',()=>b.classList.toggle('sel'));
+});
+function toggleType(v){
+  const rec=v==='recurring';
+  document.getElementById('interval-field').style.display=rec?'':'none';
+  document.getElementById('once-field').style.display=rec?'none':'';
+  document.getElementById('hours-field').style.display=rec?'':'none';
+  document.getElementById('days-field').style.display=rec?'':'none';
+}
+</script>

@@ -165,6 +165,38 @@ final class SchedulerEngineTests: XCTestCase {
         XCTAssertEqual(spy.delivered.count, 0)
     }
 
+    // MARK: - Task 1: Next fire date tests
+
+    func test_nextFireDate_recurring_neverFired() {
+        let reminder = makeRecurring(intervalMinutes: 30)
+        store.add(reminder)
+        let next = engine.nextFireDate(for: reminder)
+        XCTAssertNotNil(next)
+        XCTAssertEqual(next!.timeIntervalSince1970, currentTime.timeIntervalSince1970, accuracy: 1)
+    }
+
+    func test_nextFireDate_recurring_afterFire() {
+        let reminder = makeRecurring(intervalMinutes: 30)
+        store.add(reminder)
+        engine.checkAndFire()  // fires once, sets lastFired to currentTime
+        let next = engine.nextFireDate(for: reminder)
+        XCTAssertNotNil(next)
+        let expected = currentTime.addingTimeInterval(30 * 60)
+        XCTAssertEqual(next!.timeIntervalSince1970, expected.timeIntervalSince1970, accuracy: 1)
+    }
+
+    func test_nextFireDate_oneTime() {
+        let future = Date().addingTimeInterval(3600)
+        let reminder = makeOneTime(scheduledDate: future)
+        XCTAssertEqual(engine.nextFireDate(for: reminder), future)
+    }
+
+    func test_nextFireDate_disabled_returnsNil() {
+        var reminder = makeRecurring(intervalMinutes: 30)
+        reminder.isEnabled = false
+        XCTAssertNil(engine.nextFireDate(for: reminder))
+    }
+
     private func makeOneTime(scheduledDate: Date) -> Reminder {
         Reminder(
             id: UUID(),

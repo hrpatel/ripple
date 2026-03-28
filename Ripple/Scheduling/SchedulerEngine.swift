@@ -56,6 +56,21 @@ final class SchedulerEngine {
         }
     }
 
+    func nextFireDate(for reminder: Reminder) -> Date? {
+        guard reminder.isEnabled else { return nil }
+
+        switch reminder.type {
+        case .recurring:
+            guard let interval = reminder.intervalMinutes else { return nil }
+            if let last = lastFired[reminder.id] {
+                return last.addingTimeInterval(Double(interval) * 60)
+            }
+            return now()
+        case .oneTime:
+            return reminder.scheduledDate
+        }
+    }
+
     private func shouldFireRecurring(_ reminder: Reminder, at date: Date) -> Bool {
         guard let intervalMinutes = reminder.intervalMinutes else { return false }
 

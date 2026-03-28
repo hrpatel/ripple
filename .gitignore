@@ -1,15 +1,18 @@
 # macOS
-.DS_Store
+**/.DS_Store
 
 # Xcode user data
 xcuserdata/
 *.xcuserstate
-
-# Build output
-build/
-DerivedData/
+*.xccheckout
+*.moved-aside
 
 # Swift Package Manager
 .build/
 .swiftpm/
 Package.resolved
+
+
+# Build output
+build/
+DerivedData/

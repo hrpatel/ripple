@@ -6,9 +6,20 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		391EAF012F7779B800373F4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 391EAED52F7773C000373F4E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 391EAEDC2F7773C000373F4E;
+			remoteInfo = Ripple;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		391EAEDD2F7773C000373F4E /* Ripple.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ripple.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		391EAEED2F77758200373F4E /* Ripple.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Ripple.xcodeproj; sourceTree = "<group>"; };
+		391EAEFD2F7779B800373F4E /* RippleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RippleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -17,10 +28,22 @@
 			path = Ripple;
 			sourceTree = "<group>";
 		};
+		391EAEFE2F7779B800373F4E /* RippleTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = RippleTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		391EAEDA2F7773C000373F4E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		391EAEFA2F7779B800373F4E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -34,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				391EAEDF2F7773C000373F4E /* Ripple */,
+				391EAEFE2F7779B800373F4E /* RippleTests */,
 				391EAEDE2F7773C000373F4E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -42,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				391EAEDD2F7773C000373F4E /* Ripple.app */,
+				391EAEFD2F7779B800373F4E /* RippleTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +101,29 @@
 			productReference = 391EAEDD2F7773C000373F4E /* Ripple.app */;
 			productType = "com.apple.product-type.application";
 		};
+		391EAEFC2F7779B800373F4E /* RippleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 391EAF032F7779B800373F4E /* Build configuration list for PBXNativeTarget "RippleTests" */;
+			buildPhases = (
+				391EAEF92F7779B800373F4E /* Sources */,
+				391EAEFA2F7779B800373F4E /* Frameworks */,
+				391EAEFB2F7779B800373F4E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				391EAF022F7779B800373F4E /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				391EAEFE2F7779B800373F4E /* RippleTests */,
+			);
+			name = RippleTests;
+			packageProductDependencies = (
+			);
+			productName = RippleTests;
+			productReference = 391EAEFD2F7779B800373F4E /* RippleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -88,6 +136,10 @@
 				TargetAttributes = {
 					391EAEDC2F7773C000373F4E = {
 						CreatedOnToolsVersion = 26.4;
+					};
+					391EAEFC2F7779B800373F4E = {
+						CreatedOnToolsVersion = 26.4;
+						TestTargetID = 391EAEDC2F7773C000373F4E;
 					};
 				};
 			};
@@ -112,12 +164,20 @@
 			projectRoot = "";
 			targets = (
 				391EAEDC2F7773C000373F4E /* Ripple */,
+				391EAEFC2F7779B800373F4E /* RippleTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		391EAEDB2F7773C000373F4E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		391EAEFB2F7779B800373F4E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -134,7 +194,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		391EAEF92F7779B800373F4E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		391EAF022F7779B800373F4E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 391EAEDC2F7773C000373F4E /* Ripple */;
+			targetProxy = 391EAF012F7779B800373F4E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		391EAEE62F7773C100373F4E /* Debug */ = {
@@ -337,6 +412,56 @@
 			};
 			name = Release;
 		};
+		391EAF042F7779B800373F4E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 26.3;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.github.hrpatel.RippleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ripple.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ripple";
+				XROS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Debug;
+		};
+		391EAF052F7779B800373F4E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				MACOSX_DEPLOYMENT_TARGET = 26.3;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.github.hrpatel.RippleTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ripple.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ripple";
+				XROS_DEPLOYMENT_TARGET = 26.4;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -354,6 +479,15 @@
 			buildConfigurations = (
 				391EAEE92F7773C100373F4E /* Debug */,
 				391EAEEA2F7773C100373F4E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		391EAF032F7779B800373F4E /* Build configuration list for PBXNativeTarget "RippleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				391EAF042F7779B800373F4E /* Debug */,
+				391EAF052F7779B800373F4E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -5,10 +5,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem!
     var popover: NSPopover!
     var store = ReminderStore()
+    var engine: SchedulerEngine!
+    var delivery: DeliveryManager!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMenubarIcon()
         setupPopover()
+        setupScheduler()
     }
 
     private func setupMenubarIcon() {
@@ -27,6 +30,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentViewController = NSHostingController(
             rootView: ContentView().environment(store)
         )
+    }
+
+    private func setupScheduler() {
+        delivery = DeliveryManager(statusButton: statusItem.button) { [weak self] id in
+            self?.engine.snooze(id)
+        }
+        delivery.requestAuthorization()
+        engine = SchedulerEngine(store: store, delivery: delivery)
+        engine.start()
     }
 
     @objc private func togglePopover() {

@@ -17,6 +17,7 @@ final class SchedulerEngineTests: XCTestCase {
     var store: ReminderStore!
     var spy: SpyDelivery!
     var engine: SchedulerEngine!
+    var currentTime: Date!
 
     override func setUp() {
         super.setUp()
@@ -25,7 +26,8 @@ final class SchedulerEngineTests: XCTestCase {
             .appendingPathComponent("reminders.json")
         store = ReminderStore(persistenceURL: tempURL)
         spy = SpyDelivery()
-        engine = SchedulerEngine(store: store, delivery: spy)
+        currentTime = Date()
+        engine = SchedulerEngine(store: store, delivery: spy, now: { self.currentTime })
     }
 
     override func tearDown() {
@@ -71,6 +73,55 @@ final class SchedulerEngineTests: XCTestCase {
         engine.checkAndFire()   // first fire — sets lastFired
         spy.delivered.removeAll()
         engine.checkAndFire()   // immediately again — interval not elapsed
+        XCTAssertEqual(spy.delivered.count, 0)
+    }
+
+    // MARK: - Task 3: Active hours, active days, disabled tests
+
+    func test_recurring_respectsActiveHours() {
+        // 08:00 on 2026-03-28 — before the 09:00–17:00 active window
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 28; c.hour = 8; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(intervalMinutes: 30, activeHoursStart: 540, activeHoursEnd: 1020)
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+    }
+
+    func test_recurring_respectsActiveDays() {
+        // 2026-03-28 is a Saturday — reminder only active Mon–Fri
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 28; c.hour = 10; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(intervalMinutes: 30, activeDays: [.mon, .tue, .wed, .thu, .fri])
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+    }
+
+    func test_recurring_allDaysWhenActiveDaysNil() {
+        // Same Saturday — activeDays nil means every day passes
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 28; c.hour = 10; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(intervalMinutes: 30, activeDays: nil)
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 1)
+    }
+
+    func test_disabled_neverFires() {
+        var reminder = makeRecurring(intervalMinutes: 30)
+        reminder.isEnabled = false
+        store.add(reminder)
+        engine.checkAndFire()
         XCTAssertEqual(spy.delivered.count, 0)
     }
 

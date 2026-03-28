@@ -53,6 +53,21 @@ final class SchedulerEngine {
     private func shouldFireRecurring(_ reminder: Reminder, at date: Date) -> Bool {
         guard let intervalMinutes = reminder.intervalMinutes else { return false }
 
+        // Active days check
+        if let activeDays = reminder.activeDays {
+            let calWeekday = Calendar.current.component(.weekday, from: date)
+            guard activeDays.contains(weekdayFromCalendar(calWeekday)) else { return false }
+        }
+
+        // Active hours check (assumes start <= end, no overnight ranges)
+        if let start = reminder.activeHoursStart, let end = reminder.activeHoursEnd {
+            let h = Calendar.current.component(.hour, from: date)
+            let m = Calendar.current.component(.minute, from: date)
+            let mins = h * 60 + m
+            guard mins >= start && mins <= end else { return false }
+        }
+
+        // Interval elapsed check
         if let last = lastFired[reminder.id] {
             let elapsedMinutes = date.timeIntervalSince(last) / 60
             guard elapsedMinutes >= Double(intervalMinutes) else { return false }

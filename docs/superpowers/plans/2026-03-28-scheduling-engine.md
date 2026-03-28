@@ -12,33 +12,30 @@
 
 ## File Map
 
-| Status | Path | Responsibility |
-|--------|------|----------------|
-| Create | `Ripple/Scheduling/SchedulerEngine.swift` | 60-second timer, fire conditions, snooze tracking |
+
+| Status | Path                                      | Responsibility                                                                 |
+| ------ | ----------------------------------------- | ------------------------------------------------------------------------------ |
+| Create | `Ripple/Scheduling/SchedulerEngine.swift` | 60-second timer, fire conditions, snooze tracking                              |
 | Create | `Ripple/Scheduling/DeliveryManager.swift` | `DeliveryManagerProtocol` + implementation: notification, sound, menubar flash |
-| Modify | `Ripple/AppDelegate.swift` | Add `engine` + `delivery` properties, `setupScheduler()` |
-| Create | `RippleTests/SchedulerEngineTests.swift` | Unit tests for all fire conditions |
+| Modify | `Ripple/AppDelegate.swift`                | Add `engine` + `delivery` properties, `setupScheduler()`                       |
+| Create | `RippleTests/SchedulerEngineTests.swift`  | Unit tests for all fire conditions                                             |
+
 
 ---
 
 ### Task 1: Scaffold — protocol, engine skeleton, test boilerplate
 
 **Files:**
+
 - Create: `Ripple/Scheduling/DeliveryManager.swift`
 - Create: `Ripple/Scheduling/SchedulerEngine.swift`
 - Create: `RippleTests/SchedulerEngineTests.swift`
-
-- [ ] **Step 1: Create the Scheduling group in Xcode**
-
+- **Step 1: Create the Scheduling group in Xcode**
   In the Project Navigator, right-click the **Ripple** folder → **New Group** → name it `Scheduling`
-
-- [ ] **Step 2: Create DeliveryManager.swift in the Scheduling group**
-
+- **Step 2: Create DeliveryManager.swift in the Scheduling group**
   Right-click **Scheduling** → **New File...** → **Swift File** → name it `DeliveryManager` → **Create**
   Confirm **Ripple** target is checked, NOT RippleTests.
-
   Replace the file contents with:
-
   ```swift
   import Foundation
 
@@ -46,14 +43,10 @@
       func deliver(_ reminder: Reminder)
   }
   ```
-
-- [ ] **Step 3: Create SchedulerEngine.swift in the Scheduling group**
-
+- **Step 3: Create SchedulerEngine.swift in the Scheduling group**
   Right-click **Scheduling** → **New File...** → **Swift File** → name it `SchedulerEngine` → **Create**
   Confirm **Ripple** target is checked, NOT RippleTests.
-
   Replace the file contents with:
-
   ```swift
   import Foundation
 
@@ -95,14 +88,10 @@
       }
   }
   ```
-
-- [ ] **Step 4: Create SchedulerEngineTests.swift in RippleTests**
-
+- **Step 4: Create SchedulerEngineTests.swift in RippleTests**
   Right-click **RippleTests** → **New File...** → **Swift File** → name it `SchedulerEngineTests` → **Create**
   Confirm **RippleTests** target is checked, NOT Ripple.
-
   Replace the file contents with:
-
   ```swift
   import XCTest
   @testable import Ripple
@@ -179,9 +168,7 @@
       }
   }
   ```
-
-- [ ] **Step 5: Build to confirm everything compiles**
-
+- **Step 5: Build to confirm everything compiles**
   Press **⌘B**.
   Expected: "Build Succeeded" — no errors.
 
@@ -190,13 +177,11 @@
 ### Task 2: Recurring interval logic (TDD)
 
 **Files:**
+
 - Modify: `RippleTests/SchedulerEngineTests.swift` — add 2 tests
 - Modify: `Ripple/Scheduling/SchedulerEngine.swift` — implement interval check
-
-- [ ] **Step 1: Add the failing tests**
-
+- **Step 1: Add the failing tests**
   Add these two test methods inside `SchedulerEngineTests`, after the helpers:
-
   ```swift
   func test_recurring_firesWhenDue() {
       let reminder = makeRecurring(intervalMinutes: 30)
@@ -214,16 +199,11 @@
       XCTAssertEqual(spy.delivered.count, 0)
   }
   ```
-
-- [ ] **Step 2: Run tests to confirm they fail**
-
+- **Step 2: Run tests to confirm they fail**
   Press **⌘U**.
   Expected: Both new tests FAIL — `test_recurring_firesWhenDue` fails because `checkAndFire()` does nothing (delivered.count = 0, not 1).
-
-- [ ] **Step 3: Implement interval check in SchedulerEngine**
-
+- **Step 3: Implement interval check in SchedulerEngine**
   Replace `checkAndFire()` and add helper methods in `SchedulerEngine.swift`:
-
   ```swift
   func checkAndFire() {
       let current = now()
@@ -267,14 +247,10 @@
       }
   }
   ```
-
-- [ ] **Step 4: Run tests to confirm they pass**
-
+- **Step 4: Run tests to confirm they pass**
   Press **⌘U**.
   Expected: `test_recurring_firesWhenDue` and `test_recurring_doesNotFireBeforeInterval` both pass.
-
-- [ ] **Step 5: Commit**
-
+- **Step 5: Commit**
   ```bash
   cd /Users/hpatel/Revisions/ripple
   git add Ripple/Scheduling/ RippleTests/SchedulerEngineTests.swift
@@ -286,13 +262,11 @@
 ### Task 3: Active hours, active days, and disabled (TDD)
 
 **Files:**
+
 - Modify: `RippleTests/SchedulerEngineTests.swift` — add 4 tests
 - Modify: `Ripple/Scheduling/SchedulerEngine.swift` — add active hours/days checks
-
-- [ ] **Step 1: Add the failing tests**
-
+- **Step 1: Add the failing tests**
   Add these four test methods to `SchedulerEngineTests`:
-
   ```swift
   func test_recurring_respectsActiveHours() {
       // 08:00 on 2026-03-28 — before the 09:00–17:00 active window
@@ -344,16 +318,11 @@
       XCTAssertEqual(spy.delivered.count, 0)
   }
   ```
-
-- [ ] **Step 2: Run tests to confirm the new ones fail**
-
+- **Step 2: Run tests to confirm the new ones fail**
   Press **⌘U**.
   Expected: `test_recurring_respectsActiveHours` and `test_recurring_respectsActiveDays` FAIL (fire when they shouldn't). `test_recurring_allDaysWhenActiveDaysNil` passes (by coincidence — no day check yet). `test_disabled_neverFires` passes (guard already in place).
-
-- [ ] **Step 3: Add active hours and days checks to shouldFireRecurring**
-
+- **Step 3: Add active hours and days checks to shouldFireRecurring**
   Replace the entire `shouldFireRecurring` method in `SchedulerEngine.swift`:
-
   ```swift
   private func shouldFireRecurring(_ reminder: Reminder, at date: Date) -> Bool {
       guard let intervalMinutes = reminder.intervalMinutes else { return false }
@@ -381,14 +350,10 @@
       return true
   }
   ```
-
-- [ ] **Step 4: Run tests to confirm all pass**
-
+- **Step 4: Run tests to confirm all pass**
   Press **⌘U**.
   Expected: All tests pass, including the 4 new ones.
-
-- [ ] **Step 5: Commit**
-
+- **Step 5: Commit**
   ```bash
   cd /Users/hpatel/Revisions/ripple
   git add Ripple/Scheduling/SchedulerEngine.swift RippleTests/SchedulerEngineTests.swift
@@ -400,13 +365,11 @@
 ### Task 4: Snooze (TDD)
 
 **Files:**
+
 - Modify: `RippleTests/SchedulerEngineTests.swift` — add 2 tests
 - Modify: `Ripple/Scheduling/SchedulerEngine.swift` — snooze is already wired; verify it works
-
-- [ ] **Step 1: Add the failing tests**
-
+- **Step 1: Add the failing tests**
   Add these two test methods to `SchedulerEngineTests`:
-
   ```swift
   func test_recurring_skipsWhenSnoozed() {
       let reminder = makeRecurring(intervalMinutes: 30)
@@ -434,16 +397,11 @@
       XCTAssertEqual(spy.delivered.count, 1)
   }
   ```
-
-- [ ] **Step 2: Run tests to confirm they fail**
-
+- **Step 2: Run tests to confirm they fail**
   Press **⌘U**.
   Expected: Both snooze tests FAIL — snooze logic is stubbed in but `snoozedUntil` filtering in `checkAndFire` uses `now()`, so the timing may not work correctly until fully verified.
-
-- [ ] **Step 3: Add snooze filtering to checkAndFire**
-
+- **Step 3: Add snooze filtering to checkAndFire**
   Replace `checkAndFire()` in `SchedulerEngine.swift` with:
-
   ```swift
   func checkAndFire() {
       let current = now()
@@ -464,14 +422,10 @@
       }
   }
   ```
-
-- [ ] **Step 4: Run tests to confirm all pass**
-
+- **Step 4: Run tests to confirm all pass**
   Press **⌘U**.
   Expected: All tests pass.
-
-- [ ] **Step 5: Commit**
-
+- **Step 5: Commit**
   ```bash
   cd /Users/hpatel/Revisions/ripple
   git add Ripple/Scheduling/SchedulerEngine.swift RippleTests/SchedulerEngineTests.swift
@@ -483,13 +437,11 @@
 ### Task 5: One-time reminders (TDD)
 
 **Files:**
+
 - Modify: `RippleTests/SchedulerEngineTests.swift` — add 1 test
 - Modify: `Ripple/Scheduling/SchedulerEngine.swift` — implement one-time case
-
-- [ ] **Step 1: Add the failing test**
-
+- **Step 1: Add the failing test**
   Add this test method to `SchedulerEngineTests`:
-
   ```swift
   func test_oneTime_firesAndDisables() {
       let past = Date().addingTimeInterval(-60)  // 1 minute ago
@@ -502,16 +454,11 @@
       XCTAssertFalse(store.reminders.first!.isEnabled)
   }
   ```
-
-- [ ] **Step 2: Run test to confirm it fails**
-
+- **Step 2: Run test to confirm it fails**
   Press **⌘U**.
   Expected: `test_oneTime_firesAndDisables` FAIL — the `.oneTime` case is a `break` and does nothing.
-
-- [ ] **Step 3: Implement the one-time case in checkAndFire**
-
+- **Step 3: Implement the one-time case in checkAndFire**
   In `SchedulerEngine.swift`, replace the `case .oneTime: break` line inside `checkAndFire()`:
-
   ```swift
   case .oneTime:
       guard let scheduledDate = reminder.scheduledDate, current >= scheduledDate else { continue }
@@ -520,14 +467,10 @@
       store.update(updated)
       delivery.deliver(reminder)
   ```
-
-- [ ] **Step 4: Run tests to confirm all 9 pass**
-
+- **Step 4: Run tests to confirm all 9 pass**
   Press **⌘U**.
   Expected: All 9 tests pass — 0 failures.
-
-- [ ] **Step 5: Commit**
-
+- **Step 5: Commit**
   ```bash
   cd /Users/hpatel/Revisions/ripple
   git add Ripple/Scheduling/SchedulerEngine.swift RippleTests/SchedulerEngineTests.swift
@@ -539,10 +482,9 @@
 ### Task 6: DeliveryManager implementation
 
 **Files:**
+
 - Modify: `Ripple/Scheduling/DeliveryManager.swift` — full implementation
-
-- [ ] **Step 1: Replace DeliveryManager.swift with the full implementation**
-
+- **Step 1: Replace DeliveryManager.swift with the full implementation**
   ```swift
   import AppKit
   import UserNotifications
@@ -641,14 +583,10 @@
       }
   }
   ```
-
-- [ ] **Step 2: Build to confirm it compiles**
-
+- **Step 2: Build to confirm it compiles**
   Press **⌘B**.
   Expected: "Build Succeeded".
-
-- [ ] **Step 3: Commit**
-
+- **Step 3: Commit**
   ```bash
   cd /Users/hpatel/Revisions/ripple
   git add Ripple/Scheduling/DeliveryManager.swift
@@ -660,10 +598,9 @@
 ### Task 7: Wire into AppDelegate
 
 **Files:**
+
 - Modify: `Ripple/AppDelegate.swift`
-
-- [ ] **Step 1: Replace AppDelegate.swift with the wired version**
-
+- **Step 1: Replace AppDelegate.swift with the wired version**
   ```swift
   import AppKit
   import SwiftUI
@@ -719,22 +656,14 @@
       }
   }
   ```
-
-- [ ] **Step 2: Build and run**
-
+- **Step 2: Build and run**
   Press **⌘B** — Expected: "Build Succeeded".
   Press **⌘R** — Expected: Bell icon appears in menubar, no Dock icon.
-
-- [ ] **Step 3: Verify notification permission prompt**
-
+- **Step 3: Verify notification permission prompt**
   On first launch macOS should show a notification permission dialog: **"Ripple" Would Like to Send You Notifications**. Click **Allow**.
-
   If the dialog does not appear, open **System Settings → Notifications → Ripple** and enable notifications manually.
-
-- [ ] **Step 4: Smoke test a reminder firing**
-
+- **Step 4: Smoke test a reminder firing**
   In Xcode's debugger console, verify the engine started by looking for no crash output. To quickly test delivery without waiting 30 minutes, you can temporarily add a test reminder directly in `setupScheduler()`:
-
   ```swift
   // SMOKE TEST ONLY — remove after verifying
   let test = Reminder(
@@ -747,17 +676,13 @@
   )
   store.add(test)
   ```
-
   Wait ~60 seconds. Expected: a system notification titled "Test Fire" appears with a Snooze button, the Glass sound plays, and the menubar bell flashes.
-
   Remove the smoke test code after verifying.
-
-- [ ] **Step 5: Stop the app and commit**
-
+- **Step 5: Stop the app and commit**
   Press **⌘.** to stop.
-
   ```bash
   cd /Users/hpatel/Revisions/ripple
   git add Ripple/AppDelegate.swift
   git commit -m "feat: wire SchedulerEngine and DeliveryManager into AppDelegate"
   ```
+

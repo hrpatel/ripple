@@ -60,9 +60,11 @@ struct ReminderDetailView: View {
             // Edit button placeholder
             HStack {
                 Spacer()
-                Button("Edit reminder") { }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.blue)
+                NavigationLink(value: RippleDestination.form(reminder.id)) {
+                    Text("Edit reminder")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.blue)
                 Spacer()
             }
         }

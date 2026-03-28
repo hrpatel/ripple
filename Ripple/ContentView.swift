@@ -13,17 +13,34 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - Navigation
+
+enum RippleDestination: Hashable {
+    case detail(UUID)
+    case form(UUID?)  // nil = add, UUID = edit
+}
+
 // MARK: - Root View
 
 struct ContentView: View {
     @Environment(ReminderStore.self) var store
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ReminderListView()
-                .navigationDestination(for: UUID.self) { id in
-                    if let reminder = store.reminders.first(where: { $0.id == id }) {
-                        ReminderDetailView(reminder: reminder)
+                .navigationDestination(for: RippleDestination.self) { destination in
+                    switch destination {
+                    case .detail(let id):
+                        if let reminder = store.reminders.first(where: { $0.id == id }) {
+                            ReminderDetailView(reminder: reminder)
+                        }
+                    case .form(let id):
+                        if let id, let reminder = store.reminders.first(where: { $0.id == id }) {
+                            ReminderFormView(reminder: reminder, path: $path)
+                        } else {
+                            ReminderFormView(path: $path)
+                        }
                     }
                 }
         }

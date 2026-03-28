@@ -25,9 +25,11 @@ struct ReminderListView: View {
                 Text("Reminders")
                     .font(.headline)
                 Spacer()
-                Button("+ Add") { }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.blue)
+                NavigationLink(value: RippleDestination.form(nil)) {
+                    Text("+ Add")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.blue)
             }
             .padding(.horizontal)
             .padding(.top, 12)
@@ -52,7 +54,7 @@ struct ReminderListView: View {
                 Spacer()
             } else {
                 List(filteredReminders) { reminder in
-                    NavigationLink(value: reminder.id) {
+                    NavigationLink(value: RippleDestination.detail(reminder.id)) {
                         ReminderRowView(reminder: reminder) { newValue in
                             var updated = reminder
                             updated.isEnabled = newValue

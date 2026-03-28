@@ -1,0 +1,77 @@
+import Foundation
+
+final class SchedulerEngine {
+    private let store: ReminderStore
+    private let delivery: DeliveryManagerProtocol
+    private let now: () -> Date
+    private var timer: Timer?
+    private var lastFired: [UUID: Date] = [:]
+    private var snoozedUntil: [UUID: Date] = [:]
+
+    init(
+        store: ReminderStore,
+        delivery: DeliveryManagerProtocol,
+        now: @escaping () -> Date = Date.init
+    ) {
+        self.store = store
+        self.delivery = delivery
+        self.now = now
+    }
+
+    func start() {
+        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+            self?.checkAndFire()
+        }
+    }
+
+    func stop() {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    func snooze(_ id: UUID) {
+        snoozedUntil[id] = now().addingTimeInterval(5 * 60)
+    }
+
+    func checkAndFire() {
+        let current = now()
+
+        for reminder in store.reminders {
+            guard reminder.isEnabled else { continue }
+
+            switch reminder.type {
+            case .recurring:
+                guard shouldFireRecurring(reminder, at: current) else { continue }
+                lastFired[reminder.id] = current
+                delivery.deliver(reminder)
+            case .oneTime:
+                break  // implemented in Task 5
+            }
+        }
+    }
+
+    private func shouldFireRecurring(_ reminder: Reminder, at date: Date) -> Bool {
+        guard let intervalMinutes = reminder.intervalMinutes else { return false }
+
+        if let last = lastFired[reminder.id] {
+            let elapsedMinutes = date.timeIntervalSince(last) / 60
+            guard elapsedMinutes >= Double(intervalMinutes) else { return false }
+        }
+
+        return true
+    }
+
+    private func weekdayFromCalendar(_ calendarWeekday: Int) -> Weekday {
+        // Calendar.weekday: Sun=1, Mon=2, Tue=3, Wed=4, Thu=5, Fri=6, Sat=7
+        // Weekday enum:     Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
+        switch calendarWeekday {
+        case 1: return .sun
+        case 2: return .mon
+        case 3: return .tue
+        case 4: return .wed
+        case 5: return .thu
+        case 6: return .fri
+        default: return .sat
+        }
+    }
+}

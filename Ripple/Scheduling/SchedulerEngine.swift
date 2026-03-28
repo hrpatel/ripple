@@ -47,7 +47,11 @@ final class SchedulerEngine {
                 lastFired[reminder.id] = current
                 delivery.deliver(reminder)
             case .oneTime:
-                break  // implemented in Task 5
+                guard let scheduledDate = reminder.scheduledDate, current >= scheduledDate else { continue }
+                var updated = reminder
+                updated.isEnabled = false
+                store.update(updated)
+                delivery.deliver(reminder)
             }
         }
     }

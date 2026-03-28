@@ -144,6 +144,19 @@ final class SchedulerEngineTests: XCTestCase {
         XCTAssertEqual(spy.delivered.count, 1)
     }
 
+    // MARK: - Task 5: One-time reminder tests
+
+    func test_oneTime_firesAndDisables() {
+        let past = Date().addingTimeInterval(-60)  // 1 minute ago
+        let reminder = makeOneTime(scheduledDate: past)
+        store.add(reminder)
+
+        engine.checkAndFire()
+
+        XCTAssertEqual(spy.delivered.count, 1)
+        XCTAssertFalse(store.reminders.first!.isEnabled)
+    }
+
     func test_disabled_neverFires() {
         var reminder = makeRecurring(intervalMinutes: 30)
         reminder.isEnabled = false

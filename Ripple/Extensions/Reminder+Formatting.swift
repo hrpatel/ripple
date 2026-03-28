@@ -73,4 +73,16 @@ extension Weekday {
         case .sun: return "Sun"
         }
     }
+
+    var letter: String {
+        switch self {
+        case .mon: return "M"
+        case .tue: return "T"
+        case .wed: return "W"
+        case .thu: return "T"
+        case .fri: return "F"
+        case .sat: return "S"
+        case .sun: return "S"
+        }
+    }
 }

@@ -1,8 +1,9 @@
 import Foundation
-import Combine
+import Observation
 
-final class ReminderStore: ObservableObject {
-    @Published var reminders: [Reminder]
+@Observable
+final class ReminderStore {
+    var reminders: [Reminder]
     private let persistenceURL: URL
 
     init(persistenceURL: URL = PersistenceManager.defaultURL) {

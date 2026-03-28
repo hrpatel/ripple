@@ -32,8 +32,8 @@ final class ReminderStoreTests: XCTestCase {
     func test_add_persistsReminder() {
         let r = makeReminder(title: "Hydrate")
         store.add(r)
-        let reloaded = ReminderStore(persistenceURL: tempURL)
-        XCTAssertEqual(reloaded.reminders.first?.title, "Hydrate")
+        let loaded = PersistenceManager.load(from: tempURL)
+        XCTAssertEqual(loaded.first?.title, "Hydrate")
     }
 
     func test_delete_removesReminder() {

@@ -100,7 +100,7 @@ struct ReminderFormView: View {
     // MARK: - Title
 
     private var titleSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        HStack {
             Text("Title")
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -112,16 +112,11 @@ struct ReminderFormView: View {
     // MARK: - Type
 
     private var typeSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Type")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            Picker("Type", selection: $type) {
-                Text("Recurring").tag(ReminderType.recurring)
-                Text("One-time").tag(ReminderType.oneTime)
-            }
-            .pickerStyle(.segmented)
+        Picker("Type", selection: $type) {
+            Text("Recurring").tag(ReminderType.recurring)
+            Text("One-time").tag(ReminderType.oneTime)
         }
+        .pickerStyle(.segmented)
     }
 
     // MARK: - Recurring fields

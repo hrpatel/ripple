@@ -18,9 +18,15 @@ struct ReminderFormView: View {
     @State private var notificationEnabled: Bool
     @State private var soundEnabled: Bool
     @State private var menubarFlashEnabled: Bool
-    @State private var snoozeEnabled: Bool
+    @State private var snoozeDurationMinutes: Int?
 
     private let intervalPresets = [15, 30, 45, 60, 90, 120]
+    private let snoozePresets = [1, 5, 10, 15, 30]
+
+    private var availableSnoozePresets: [Int] {
+        guard type == .recurring, let interval = resolvedInterval else { return snoozePresets }
+        return snoozePresets.filter { $0 < interval }
+    }
 
     var isEditing: Bool { reminderToEdit != nil }
 
@@ -48,7 +54,7 @@ struct ReminderFormView: View {
         _notificationEnabled = State(initialValue: reminder?.delivery.notification ?? true)
         _soundEnabled = State(initialValue: reminder?.delivery.sound ?? false)
         _menubarFlashEnabled = State(initialValue: reminder?.delivery.menubarIconFlash ?? false)
-        _snoozeEnabled = State(initialValue: reminder?.snoozeEnabled ?? false)
+        _snoozeDurationMinutes = State(initialValue: reminder?.snoozeDurationMinutes)
     }
 
     var body: some View {
@@ -233,8 +239,27 @@ struct ReminderFormView: View {
     // MARK: - Snooze
 
     private var snoozeSection: some View {
-        Toggle("Snooze (5 min)", isOn: $snoozeEnabled)
-            .controlSize(.small)
+        HStack {
+            Text("Snooze")
+                .font(.subheadline)
+                .fontWeight(.medium)
+
+            Picker("Snooze", selection: $snoozeDurationMinutes) {
+                Text("Off").tag(Int?.none)
+                ForEach(availableSnoozePresets, id: \.self) { mins in
+                    Text("\(mins) min").tag(Int?.some(mins))
+                }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+        }
+        .onChange(of: resolvedInterval) { _, newInterval in
+            if let snooze = snoozeDurationMinutes,
+               let interval = newInterval,
+               snooze >= interval {
+                snoozeDurationMinutes = nil
+            }
+        }
     }
 
     // MARK: - Footer
@@ -274,7 +299,7 @@ struct ReminderFormView: View {
         switch type {
         case .recurring:
             guard let mins = resolvedInterval, mins > 0 else { return false }
-            if activeHoursEnabled && activeHoursStart >= activeHoursEnd { return false }
+            if activeHoursEnabled && activeHoursStart == activeHoursEnd { return false }
             return true
         case .oneTime:
             return true
@@ -305,7 +330,7 @@ struct ReminderFormView: View {
                 sound: soundEnabled,
                 menubarIconFlash: menubarFlashEnabled
             ),
-            snoozeEnabled: snoozeEnabled
+            snoozeDurationMinutes: snoozeDurationMinutes
         )
 
         if isEditing {

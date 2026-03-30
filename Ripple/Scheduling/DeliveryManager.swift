@@ -7,29 +7,40 @@ protocol DeliveryManagerProtocol {
 
 final class DeliveryManager: NSObject, DeliveryManagerProtocol {
     private weak var statusButton: NSStatusBarButton?
-    private let onSnooze: (UUID) -> Void
+    private let onSnooze: (UUID, Int) -> Void
     private let onNotificationsBlocked: () -> Void
+    private let onFlashComplete: () -> Void
+    private let snoozePresets = [1, 5, 10, 15, 30]
 
     init(
         statusButton: NSStatusBarButton?,
-        onSnooze: @escaping (UUID) -> Void,
-        onNotificationsBlocked: @escaping () -> Void
+        onSnooze: @escaping (UUID, Int) -> Void,
+        onNotificationsBlocked: @escaping () -> Void,
+        onFlashComplete: @escaping () -> Void
     ) {
         self.statusButton = statusButton
         self.onSnooze = onSnooze
         self.onNotificationsBlocked = onNotificationsBlocked
+        self.onFlashComplete = onFlashComplete
         super.init()
         UNUserNotificationCenter.current().delegate = self
     }
 
     func requestAuthorization() {
-        let snoozeAction = UNNotificationAction(identifier: "SNOOZE", title: "Snooze")
-        let category = UNNotificationCategory(
-            identifier: "REMINDER",
-            actions: [snoozeAction],
-            intentIdentifiers: []
-        )
-        UNUserNotificationCenter.current().setNotificationCategories([category])
+        var categories = Set<UNNotificationCategory>()
+        for minutes in snoozePresets {
+            let action = UNNotificationAction(
+                identifier: "SNOOZE",
+                title: "Snooze \(minutes) min"
+            )
+            let category = UNNotificationCategory(
+                identifier: "REMINDER_\(minutes)",
+                actions: [action],
+                intentIdentifiers: []
+            )
+            categories.insert(category)
+        }
+        UNUserNotificationCenter.current().setNotificationCategories(categories)
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
@@ -54,8 +65,8 @@ final class DeliveryManager: NSObject, DeliveryManagerProtocol {
     private func sendNotification(for reminder: Reminder) {
         let content = UNMutableNotificationContent()
         content.title = reminder.title
-        if reminder.snoozeEnabled {
-            content.categoryIdentifier = "REMINDER"
+        if let duration = reminder.snoozeDurationMinutes {
+            content.categoryIdentifier = "REMINDER_\(duration)"
         }
         let request = UNNotificationRequest(
             identifier: reminder.id.uuidString,
@@ -66,20 +77,19 @@ final class DeliveryManager: NSObject, DeliveryManagerProtocol {
     }
 
     private func flashMenubarIcon() {
-        var count = 0
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
-            count += 1
-            let filled = count % 2 == 0
-            self?.statusButton?.image = NSImage(
-                systemSymbolName: filled ? "bell.fill" : "bell",
-                accessibilityDescription: nil
-            )
-            if count >= 8 {
-                timer.invalidate()
+        DispatchQueue.main.async { [weak self] in
+            var count = 0
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
+                count += 1
+                let filled = count % 2 == 0
                 self?.statusButton?.image = NSImage(
-                    systemSymbolName: "bell.fill",
+                    systemSymbolName: filled ? "bell.fill" : "bell",
                     accessibilityDescription: nil
                 )
+                if count >= 8 {
+                    timer.invalidate()
+                    self?.onFlashComplete()
+                }
             }
         }
     }
@@ -93,7 +103,10 @@ extension DeliveryManager: UNUserNotificationCenterDelegate {
     ) {
         if response.actionIdentifier == "SNOOZE",
            let id = UUID(uuidString: response.notification.request.identifier) {
-            onSnooze(id)
+            // Extract duration from categoryIdentifier (e.g. "REMINDER_5" → 5)
+            let category = response.notification.request.content.categoryIdentifier
+            let duration = Int(category.replacingOccurrences(of: "REMINDER_", with: "")) ?? 5
+            onSnooze(id, duration)
         }
         completionHandler()
     }

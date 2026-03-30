@@ -46,6 +46,12 @@ extension Reminder {
         return sorted.map { $0.shortName }.joined(separator: ", ")
     }
 
+    /// "Snooze 5 min" or "Snooze off"
+    var snoozeLabel: String {
+        guard let mins = snoozeDurationMinutes else { return "Snooze off" }
+        return "Snooze \(mins) min"
+    }
+
     private func formatMinutes(_ totalMinutes: Int) -> String {
         let h = totalMinutes / 60
         let m = totalMinutes % 60

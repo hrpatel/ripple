@@ -29,8 +29,8 @@ final class SchedulerEngine {
         timer = nil
     }
 
-    func snooze(_ id: UUID) {
-        snoozedUntil[id] = now().addingTimeInterval(5 * 60)
+    func snooze(_ id: UUID, duration: Int) {
+        snoozedUntil[id] = now().addingTimeInterval(Double(duration) * 60)
     }
 
     func checkAndFire() {
@@ -74,18 +74,41 @@ final class SchedulerEngine {
     private func shouldFireRecurring(_ reminder: Reminder, at date: Date) -> Bool {
         guard let intervalMinutes = reminder.intervalMinutes else { return false }
 
-        // Active days check
-        if let activeDays = reminder.activeDays {
-            let calWeekday = Calendar.current.component(.weekday, from: date)
-            guard activeDays.contains(weekdayFromCalendar(calWeekday)) else { return false }
-        }
+        let calWeekday = Calendar.current.component(.weekday, from: date)
 
-        // Active hours check (assumes start <= end, no overnight ranges)
+        // Active hours check (supports overnight ranges where start > end)
         if let start = reminder.activeHoursStart, let end = reminder.activeHoursEnd {
             let h = Calendar.current.component(.hour, from: date)
             let m = Calendar.current.component(.minute, from: date)
             let mins = h * 60 + m
-            guard mins >= start && mins <= end else { return false }
+
+            if start <= end {
+                // Daytime range: e.g. 9am–5pm
+                guard mins >= start && mins <= end else { return false }
+            } else {
+                // Overnight range: e.g. 10pm–6am
+                guard mins >= start || mins <= end else { return false }
+            }
+
+            // Active days check — for overnight ranges in the after-midnight portion,
+            // check the previous day (the day the window started)
+            if let activeDays = reminder.activeDays {
+                let isOvernight = start > end
+                let isAfterMidnight = isOvernight && mins <= end
+                let dayToCheck: Int
+                if isAfterMidnight {
+                    // Wrap: Sun(1) -> Sat(7), Mon(2) -> Sun(1), etc.
+                    dayToCheck = calWeekday == 1 ? 7 : calWeekday - 1
+                } else {
+                    dayToCheck = calWeekday
+                }
+                guard activeDays.contains(weekdayFromCalendar(dayToCheck)) else { return false }
+            }
+        } else {
+            // No active hours set — just check active days against current day
+            if let activeDays = reminder.activeDays {
+                guard activeDays.contains(weekdayFromCalendar(calWeekday)) else { return false }
+            }
         }
 
         // Interval elapsed check

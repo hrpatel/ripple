@@ -55,6 +55,13 @@ struct ReminderDetailView: View {
                 deliveryTag("Menubar Icon", isActive: reminder.delivery.menubarIconFlash)
             }
 
+            // Snooze
+            Text("SNOOZE")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(reminder.snoozeLabel)
+                .font(.subheadline)
+
             Spacer()
 
             // Edit button placeholder

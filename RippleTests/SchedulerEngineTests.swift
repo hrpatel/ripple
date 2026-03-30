@@ -54,7 +54,7 @@ final class SchedulerEngineTests: XCTestCase {
             activeDays: activeDays,
             isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
     }
 
@@ -122,7 +122,7 @@ final class SchedulerEngineTests: XCTestCase {
     func test_recurring_skipsWhenSnoozed() {
         let reminder = makeRecurring(intervalMinutes: 30)
         store.add(reminder)
-        engine.snooze(reminder.id)
+        engine.snooze(reminder.id, duration: 5)
         engine.checkAndFire()
         XCTAssertEqual(spy.delivered.count, 0)
     }
@@ -134,12 +134,32 @@ final class SchedulerEngineTests: XCTestCase {
         let reminder = makeRecurring(intervalMinutes: 30)
         store.add(reminder)
 
-        engine.snooze(reminder.id)
+        engine.snooze(reminder.id, duration: 5)
         engine.checkAndFire()
         XCTAssertEqual(spy.delivered.count, 0)
 
         // Advance 6 minutes — past the 5-minute snooze window
         currentTime = base.addingTimeInterval(6 * 60)
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 1)
+    }
+
+    func test_recurring_snoozeDurationIsConfigurable() {
+        let base = Date()
+        currentTime = base
+
+        let reminder = makeRecurring(intervalMinutes: 30)
+        store.add(reminder)
+
+        engine.snooze(reminder.id, duration: 10)
+
+        // Advance 6 minutes — past 5 min but within 10 min snooze
+        currentTime = base.addingTimeInterval(6 * 60)
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+
+        // Advance to 11 minutes — past the 10-minute snooze
+        currentTime = base.addingTimeInterval(11 * 60)
         engine.checkAndFire()
         XCTAssertEqual(spy.delivered.count, 1)
     }
@@ -197,6 +217,97 @@ final class SchedulerEngineTests: XCTestCase {
         XCTAssertNil(engine.nextFireDate(for: reminder))
     }
 
+    // MARK: - Overnight active hours tests
+
+    func test_recurring_overnightHours_firesBeforeMidnight() {
+        // Friday 11pm — within 10pm–6am window
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 27; c.hour = 23; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(
+            intervalMinutes: 30,
+            activeHoursStart: 1320,  // 10pm = 22*60
+            activeHoursEnd: 360      // 6am = 6*60
+        )
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 1)
+    }
+
+    func test_recurring_overnightHours_firesAfterMidnight() {
+        // Saturday 2am — within 10pm–6am window (started Friday night)
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 28; c.hour = 2; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(
+            intervalMinutes: 30,
+            activeHoursStart: 1320,  // 10pm
+            activeHoursEnd: 360      // 6am
+        )
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 1)
+    }
+
+    func test_recurring_overnightHours_doesNotFireOutsideWindow() {
+        // Saturday 8am — outside the 10pm–6am window
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 28; c.hour = 8; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(
+            intervalMinutes: 30,
+            activeHoursStart: 1320,  // 10pm
+            activeHoursEnd: 360      // 6am
+        )
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+    }
+
+    func test_recurring_overnightHours_activeDays_checksStartDay() {
+        // Saturday 2am — the overnight window started Friday night
+        // Active days Mon–Fri: Friday is active, so this should fire
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 28; c.hour = 2; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(
+            intervalMinutes: 30,
+            activeHoursStart: 1320,  // 10pm
+            activeHoursEnd: 360,     // 6am
+            activeDays: [.mon, .tue, .wed, .thu, .fri]
+        )
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 1)
+    }
+
+    func test_recurring_overnightHours_activeDays_rejectsInactiveStartDay() {
+        // Sunday 2am — the overnight window started Saturday night
+        // Active days Mon–Fri: Saturday is NOT active, so this should NOT fire
+        var c = DateComponents()
+        c.year = 2026; c.month = 3; c.day = 29; c.hour = 2; c.minute = 0
+        currentTime = Calendar.current.date(from: c)!
+
+        let reminder = makeRecurring(
+            intervalMinutes: 30,
+            activeHoursStart: 1320,  // 10pm
+            activeHoursEnd: 360,     // 6am
+            activeDays: [.mon, .tue, .wed, .thu, .fri]
+        )
+        store.add(reminder)
+
+        engine.checkAndFire()
+        XCTAssertEqual(spy.delivered.count, 0)
+    }
+
     private func makeOneTime(scheduledDate: Date) -> Reminder {
         Reminder(
             id: UUID(),
@@ -209,7 +320,7 @@ final class SchedulerEngineTests: XCTestCase {
             activeDays: nil,
             isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
     }
 }

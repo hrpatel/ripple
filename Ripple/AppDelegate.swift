@@ -35,9 +35,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupScheduler() {
-        delivery = DeliveryManager(statusButton: statusItem.button) { [weak self] id in
-            self?.engine.snooze(id)
-        }
+        delivery = DeliveryManager(
+            statusButton: statusItem.button,
+            onSnooze: { [weak self] id in
+                self?.engine.snooze(id)
+            },
+            onNotificationsBlocked: { [weak self] in
+                DispatchQueue.main.async { self?.store.notificationsBlocked = true }
+            }
+        )
         delivery.requestAuthorization()
         engine = SchedulerEngine(store: store, delivery: delivery)
         engine.start()

@@ -153,6 +153,8 @@ Remove the `activeHoursStart >= activeHoursEnd` validation in `ReminderFormView.
 | Modify | `RippleTests/SchedulerEngineTests.swift` | Overnight hours tests, snooze duration tests |
 | Modify | `RippleTests/ReminderStoreTests.swift` | Update `makeReminder` helper for new model field |
 | Modify | `RippleTests/PersistenceManagerTests.swift` | Update test reminders for new model field |
+| Modify | `README.md` | Move implemented features out of "Not Yet Implemented", update Scheduling and UI sections |
+| Modify | `CHANGELOG.md` | Record changes for this release |
 
 ---
 

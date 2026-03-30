@@ -46,7 +46,7 @@ struct ReminderFormView: View {
             _customIntervalText = State(initialValue: "\(interval)")
         }
 
-        _activeHoursEnabled = State(initialValue: reminder?.activeHoursStart != nil)
+        _activeHoursEnabled = State(initialValue: reminder?.activeHoursStart != nil || reminder == nil)
         _activeHoursStart = State(initialValue: reminder?.activeHoursStart ?? 540)
         _activeHoursEnd = State(initialValue: reminder?.activeHoursEnd ?? 1020)
         _activeDays = State(initialValue: reminder?.activeDays ?? Set(Weekday.allCases))
@@ -92,6 +92,8 @@ struct ReminderFormView: View {
             .padding(.horizontal)
             .padding(.bottom, 8)
 
+            Spacer()
+
             Divider()
             footerSection
         }
@@ -100,7 +102,7 @@ struct ReminderFormView: View {
     // MARK: - Title
 
     private var titleSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        HStack {
             Text("Title")
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -112,16 +114,11 @@ struct ReminderFormView: View {
     // MARK: - Type
 
     private var typeSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Type")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            Picker("Type", selection: $type) {
-                Text("Recurring").tag(ReminderType.recurring)
-                Text("One-time").tag(ReminderType.oneTime)
-            }
-            .pickerStyle(.segmented)
+        Picker("Type", selection: $type) {
+            Text("Recurring").tag(ReminderType.recurring)
+            Text("One-time").tag(ReminderType.oneTime)
         }
+        .pickerStyle(.segmented)
     }
 
     // MARK: - Recurring fields

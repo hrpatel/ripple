@@ -60,13 +60,22 @@ struct ReminderListView: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            // Tab bar
+            Divider()
+
+            // Filter
+            Text("Filter")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .padding(.horizontal)
+                .padding(.top, 8)
+
             Picker("Filter", selection: $selectedFilter) {
                 ForEach(ReminderFilter.allCases, id: \.self) { filter in
                     Text(filter.rawValue).tag(filter)
                 }
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             .padding(.horizontal)
             .padding(.bottom, 8)
 

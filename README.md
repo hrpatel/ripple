@@ -31,27 +31,25 @@ A lightweight macOS menubar app for setting and triggering one-time or recurring
 - **Recurring**: fires every *N* minutes within active hours, on active days only
 - **One-time**: fires once at the scheduled date/time, then auto-disables
 - **Delivery**: notification, sound (system "Glass"), and/or menubar icon flash based on per-reminder settings
-- **Snooze**: reschedules +5 min from dismissal
+- **Snooze**: configurable per-reminder duration (1, 5, 10, 15, or 30 min); must be shorter than the reminder's interval
+- **Active hours**: supports both daytime (9am–5pm) and overnight (10pm–6am) ranges; overnight windows check the previous day for active-day filtering
 - **Permission check**: if notifications are denied, sets a `notificationsBlocked` flag and shows a banner
 
 ## UI
 
 | Screen | Description |
 |--------|-------------|
-| Menubar icon | Filled bell (`bell.fill` SF Symbol); flashes on trigger |
+| Menubar icon | Bell with dot (`bell.badge.fill`) when any reminder is active; plain bell otherwise; flashes on trigger |
 | Popover panel | Reminder list with All / Active / Paused tabs, "+ Add" button, and launch-at-login toggle |
 | Notification banner | Yellow warning when system notifications are blocked, with link to System Settings |
 | Detail view | Title, interval, active hours/days, next trigger, delivery method tags |
 | Add/Edit form | Full reminder configuration — type, interval, hours, days, delivery, snooze |
-| System notification | Title with optional "Snooze" action button (if snooze enabled) |
+| System notification | Title with optional "Snooze N min" action button (if snooze duration set) |
 
 ## Not Yet Implemented
 
-- Green dot on menubar icon when any reminder is active
 - Notification body text (e.g. "You've been sitting for 45 minutes")
 - Configurable sound selection (currently hardcoded to system "Glass" sound)
-- Configurable snooze duration (currently fixed at 5 minutes)
-- Overnight active hour ranges (e.g. 10pm–6am)
 
 ## Project Structure
 

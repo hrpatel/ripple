@@ -4,6 +4,7 @@ import Observation
 @Observable
 final class ReminderStore {
     var reminders: [Reminder]
+    var notificationsBlocked = false
     private let persistenceURL: URL
 
     init(persistenceURL: URL = PersistenceManager.defaultURL) {

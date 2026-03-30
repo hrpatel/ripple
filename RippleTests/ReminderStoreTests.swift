@@ -51,6 +51,10 @@ final class ReminderStoreTests: XCTestCase {
         XCTAssertEqual(store.reminders.first?.title, "Updated")
     }
 
+    func test_notificationsBlocked_defaultsFalse() {
+        XCTAssertFalse(store.notificationsBlocked)
+    }
+
     // MARK: - Helpers
 
     private func makeReminder(title: String) -> Reminder {

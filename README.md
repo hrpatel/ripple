@@ -44,12 +44,22 @@ A lightweight macOS menubar app for setting and triggering one-time or recurring
 
 ```
 Ripple/
-├── RippleApp.swift          # App entry point
-├── AppDelegate.swift        # NSStatusItem setup, menubar agent
-├── ContentView.swift        # Main SwiftUI view
+├── RippleApp.swift              # App entry point
+├── AppDelegate.swift            # NSStatusItem setup, menubar agent
+├── ContentView.swift            # Root NavigationStack and routing
+├── Extensions/
+│   └── Reminder+Formatting.swift # Display helpers (subtitle, interval, hours, days labels)
 ├── Models/
-│   └── Reminder.swift       # Reminder, DeliveryOptions, Weekday, ReminderType
-└── Store/
-    ├── ReminderStore.swift       # In-memory reminder state management
-    └── PersistenceManager.swift  # JSON file read/write in Application Support
+│   └── Reminder.swift           # Reminder, DeliveryOptions, Weekday, ReminderType
+├── Scheduling/
+│   ├── DeliveryManager.swift    # Notifications, sound playback, menubar flash
+│   └── SchedulerEngine.swift    # Timer-based recurring/one-time firing logic
+├── Store/
+│   ├── ReminderStore.swift      # In-memory reminder state management
+│   └── PersistenceManager.swift # JSON file read/write in Application Support
+└── Views/
+    ├── ReminderListView.swift   # Active / All / Paused tabs with reminder rows
+    ├── ReminderRowView.swift    # Single reminder row in the list
+    ├── ReminderDetailView.swift # Read-only reminder detail with next-fire info
+    └── ReminderFormView.swift   # Add/edit form for reminder configuration
 ```

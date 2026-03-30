@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         engine.start()
     }
 
-    func updateMenubarIcon() {
+    private func updateMenubarIcon() {
         let hasActive = store.reminders.contains { $0.isEnabled }
         let symbolName = hasActive ? "bell.badge.fill" : "bell.fill"
         statusItem.button?.image = NSImage(

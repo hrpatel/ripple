@@ -77,17 +77,19 @@ final class DeliveryManager: NSObject, DeliveryManagerProtocol {
     }
 
     private func flashMenubarIcon() {
-        var count = 0
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
-            count += 1
-            let filled = count % 2 == 0
-            self?.statusButton?.image = NSImage(
-                systemSymbolName: filled ? "bell.fill" : "bell",
-                accessibilityDescription: nil
-            )
-            if count >= 8 {
-                timer.invalidate()
-                self?.onFlashComplete()
+        DispatchQueue.main.async { [weak self] in
+            var count = 0
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
+                count += 1
+                let filled = count % 2 == 0
+                self?.statusButton?.image = NSImage(
+                    systemSymbolName: filled ? "bell.fill" : "bell",
+                    accessibilityDescription: nil
+                )
+                if count >= 8 {
+                    timer.invalidate()
+                    self?.onFlashComplete()
+                }
             }
         }
     }

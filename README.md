@@ -8,9 +8,10 @@ A lightweight macOS menubar app for setting and triggering one-time or recurring
 
 - Lives entirely in the **menubar** (no dock icon, no separate window)
 - Built with **Swift + SwiftUI**
-- `NSStatusItem` for menubar presence
+- `NSStatusItem` + `NSPopover` for menubar presence and popover panel
 - `UserNotifications` for system notifications
-- `AVFoundation` for sound/chime playback
+- `NSSound` for system sound playback
+- `ServiceManagement` (`SMAppService`) for launch-at-login
 - Local persistence via JSON in Application Support
 
 ## Data Model
@@ -24,21 +25,33 @@ A lightweight macOS menubar app for setting and triggering one-time or recurring
 
 ## Scheduling
 
-- On launch and after any save, all upcoming trigger times are recalculated
+- `SchedulerEngine` polls every **60 seconds** via a repeating `Timer`
+- Reminders only fire **while the app is running** — no background launch or persistent system scheduling
+- Scheduling state (last fire times, snooze expiry) is **in-memory only** — resets on restart
 - **Recurring**: fires every *N* minutes within active hours, on active days only
 - **One-time**: fires once at the scheduled date/time, then auto-disables
-- **Delivery**: notification, sound, and/or menubar flash based on per-reminder settings
+- **Delivery**: notification, sound (system "Glass"), and/or menubar icon flash based on per-reminder settings
 - **Snooze**: reschedules +5 min from dismissal
+- **Permission check**: if notifications are denied, sets a `notificationsBlocked` flag and shows a banner
 
 ## UI
 
 | Screen | Description |
 |--------|-------------|
-| Menubar icon | Bell with green dot when any reminder is active |
-| Dropdown panel | Reminder list with Active / All / Paused tabs and "+ Add" button |
+| Menubar icon | Filled bell (`bell.fill` SF Symbol); flashes on trigger |
+| Popover panel | Reminder list with All / Active / Paused tabs, "+ Add" button, and launch-at-login toggle |
+| Notification banner | Yellow warning when system notifications are blocked, with link to System Settings |
 | Detail view | Title, interval, active hours/days, next trigger, delivery method tags |
 | Add/Edit form | Full reminder configuration — type, interval, hours, days, delivery, snooze |
-| System notification | Title, contextual body, optional "Snooze 5 min" action |
+| System notification | Title with optional "Snooze" action button (if snooze enabled) |
+
+## Not Yet Implemented
+
+- Green dot on menubar icon when any reminder is active
+- Notification body text (e.g. "You've been sitting for 45 minutes")
+- Configurable sound selection (currently hardcoded to system "Glass" sound)
+- Configurable snooze duration (currently fixed at 5 minutes)
+- Overnight active hour ranges (e.g. 10pm–6am)
 
 ## Project Structure
 

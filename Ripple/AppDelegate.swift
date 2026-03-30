@@ -12,6 +12,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenubarIcon()
         setupScheduler()
         setupPopover()
+        updateMenubarIcon()
+        observeStoreChanges()
     }
 
     private func setupMenubarIcon() {
@@ -37,16 +39,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupScheduler() {
         delivery = DeliveryManager(
             statusButton: statusItem.button,
-            onSnooze: { [weak self] id in
-                self?.engine.snooze(id)
+            onSnooze: { [weak self] id, duration in
+                self?.engine.snooze(id, duration: duration)
             },
             onNotificationsBlocked: { [weak self] in
                 DispatchQueue.main.async { self?.store.notificationsBlocked = true }
+            },
+            onFlashComplete: { [weak self] in
+                self?.updateMenubarIcon()
             }
         )
         delivery.requestAuthorization()
         engine = SchedulerEngine(store: store, delivery: delivery)
         engine.start()
+    }
+
+    func updateMenubarIcon() {
+        let hasActive = store.reminders.contains { $0.isEnabled }
+        let symbolName = hasActive ? "bell.badge.fill" : "bell.fill"
+        statusItem.button?.image = NSImage(
+            systemSymbolName: symbolName,
+            accessibilityDescription: "Ripple"
+        )
+    }
+
+    private func observeStoreChanges() {
+        withObservationTracking {
+            _ = store.reminders
+        } onChange: { [weak self] in
+            DispatchQueue.main.async {
+                self?.updateMenubarIcon()
+                self?.observeStoreChanges()
+            }
+        }
     }
 
     @objc private func togglePopover() {

@@ -69,7 +69,7 @@ final class ReminderStoreTests: XCTestCase {
             activeDays: [.mon],
             isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
     }
 }

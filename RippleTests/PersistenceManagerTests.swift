@@ -33,7 +33,7 @@ final class PersistenceManagerTests: XCTestCase {
             activeDays: [.mon, .wed],
             isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
         PersistenceManager.save([reminder], to: tempURL)
         let loaded = PersistenceManager.load(from: tempURL)
@@ -50,7 +50,7 @@ final class PersistenceManagerTests: XCTestCase {
             activeHoursStart: nil, activeHoursEnd: nil,
             activeDays: [], isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
         let second = Reminder(
             id: UUID(), title: "Second", type: .oneTime,
@@ -58,7 +58,7 @@ final class PersistenceManagerTests: XCTestCase {
             activeHoursStart: nil, activeHoursEnd: nil,
             activeDays: [], isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
         PersistenceManager.save([first], to: tempURL)
         PersistenceManager.save([second], to: tempURL)

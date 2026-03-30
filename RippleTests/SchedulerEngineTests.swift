@@ -54,7 +54,7 @@ final class SchedulerEngineTests: XCTestCase {
             activeDays: activeDays,
             isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
     }
 
@@ -209,7 +209,7 @@ final class SchedulerEngineTests: XCTestCase {
             activeDays: nil,
             isEnabled: true,
             delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
-            snoozeEnabled: false
+            snoozeDurationMinutes: nil
         )
     }
 }

@@ -11,7 +11,7 @@ struct Reminder: Identifiable, Codable {
     var activeDays: Set<Weekday>?
     var isEnabled: Bool
     var delivery: DeliveryOptions
-    var snoozeEnabled: Bool
+    var snoozeDurationMinutes: Int?  // nil = snooze off, e.g. 5 = snooze 5 min
 }
 
 enum ReminderType: String, Codable {

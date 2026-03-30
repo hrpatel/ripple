@@ -8,10 +8,16 @@ protocol DeliveryManagerProtocol {
 final class DeliveryManager: NSObject, DeliveryManagerProtocol {
     private weak var statusButton: NSStatusBarButton?
     private let onSnooze: (UUID) -> Void
+    private let onNotificationsBlocked: () -> Void
 
-    init(statusButton: NSStatusBarButton?, onSnooze: @escaping (UUID) -> Void) {
+    init(
+        statusButton: NSStatusBarButton?,
+        onSnooze: @escaping (UUID) -> Void,
+        onNotificationsBlocked: @escaping () -> Void
+    ) {
         self.statusButton = statusButton
         self.onSnooze = onSnooze
+        self.onNotificationsBlocked = onNotificationsBlocked
         super.init()
         UNUserNotificationCenter.current().delegate = self
     }
@@ -29,7 +35,13 @@ final class DeliveryManager: NSObject, DeliveryManagerProtocol {
 
     func deliver(_ reminder: Reminder) {
         if reminder.delivery.notification {
-            sendNotification(for: reminder)
+            UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+                if settings.authorizationStatus == .denied {
+                    self?.onNotificationsBlocked()
+                } else {
+                    self?.sendNotification(for: reminder)
+                }
+            }
         }
         if reminder.delivery.sound {
             NSSound(named: .init("Glass"))?.play()

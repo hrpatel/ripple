@@ -1,4 +1,5 @@
 import SwiftUI
+import ServiceManagement
 
 enum ReminderFilter: String, CaseIterable {
     case all = "All"
@@ -9,6 +10,7 @@ enum ReminderFilter: String, CaseIterable {
 struct ReminderListView: View {
     @Environment(ReminderStore.self) var store
     @State private var selectedFilter: ReminderFilter = .all
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     var filteredReminders: [Reminder] {
         switch selectedFilter {
@@ -20,6 +22,29 @@ struct ReminderListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Notification blocked banner
+            if store.notificationsBlocked {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.yellow)
+                    Text("Notifications are blocked — reminders won't appear.")
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer()
+                    Button("Open System Settings") {
+                        NSWorkspace.shared.open(
+                            URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!
+                        )
+                    }
+                    .font(.caption)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.blue)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 6)
+                .background(.yellow.opacity(0.15))
+            }
+
             // Header
             HStack {
                 Text("Reminders")
@@ -64,6 +89,21 @@ struct ReminderListView: View {
                 }
                 .listStyle(.plain)
             }
+
+            Divider()
+            Toggle("Launch at login", isOn: $launchAtLogin)
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .onChange(of: launchAtLogin) { _, newValue in
+                    if newValue {
+                        try? SMAppService.mainApp.register()
+                    } else {
+                        try? SMAppService.mainApp.unregister()
+                    }
+                }
+                .onAppear {
+                    launchAtLogin = SMAppService.mainApp.status == .enabled
+                }
         }
     }
 

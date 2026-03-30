@@ -75,9 +75,10 @@ When the user taps "Snooze" on a notification, `DeliveryManager` receives the `U
 ```swift
 final class SchedulerEngine {
     init(store: ReminderStore, delivery: DeliveryManagerProtocol, now: @escaping () -> Date = Date.init)
-    func start()            // starts the 60-second Timer
-    func stop()             // invalidates the Timer
-    func snooze(_ id: UUID) // called by DeliveryManager via onSnooze callback
+    func start()                              // starts the 60-second Timer
+    func stop()                               // invalidates the Timer
+    func snooze(_ id: UUID)                   // called by DeliveryManager via onSnooze callback
+    func nextFireDate(for: Reminder) -> Date? // used by detail view to show next trigger time
 }
 ```
 
@@ -148,6 +149,10 @@ All tests in `SchedulerEngineTests.swift` use an injected `now` closure and a re
 | `test_recurring_firesAfterSnoozeExpires` | fires again once snooze window passes |
 | `test_oneTime_firesAndDisables` | fires once and sets `isEnabled = false` |
 | `test_disabled_neverFires` | skips `isEnabled == false` reminders |
+| `test_nextFireDate_recurring_neverFired` | returns now if never fired |
+| `test_nextFireDate_recurring_afterFire` | returns lastFired + interval |
+| `test_nextFireDate_oneTime` | returns scheduledDate |
+| `test_nextFireDate_disabled_returnsNil` | returns nil for disabled reminder |
 
 `DeliveryManager` itself is not unit tested — it wraps system APIs (`UNUserNotificationCenter`, `NSSound`, `NSStatusBarButton`) that require a running app environment.
 

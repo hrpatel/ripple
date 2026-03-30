@@ -154,13 +154,11 @@ AppDelegate handles all AppKit work: creates the menubar icon, creates the popov
           popover.contentSize = NSSize(width: 320, height: 400)
           popover.behavior = .transient
           popover.contentViewController = NSHostingController(
-              rootView: ContentView()
-                  .environment(store)
-                  .environment(\.schedulerEngine, engine)
+              rootView: ContentView().environment(store)
           )
       }
 
-      @objc func togglePopover() {
+      @objc private func togglePopover() {
           guard let button = statusItem.button else { return }
           if popover.isShown {
               popover.performClose(nil)
@@ -172,7 +170,7 @@ AppDelegate handles all AppKit work: creates the menubar icon, creates the popov
   }
   ```
 
-  > Note: `ReminderStore` doesn't exist yet — Xcode will show an error until Task 8. That's expected.
+  > Note: `ReminderStore` doesn't exist yet — Xcode will show an error until Task 8. That's expected. The `SchedulerEngine` environment and `engine` property are added later in the scheduling engine step (Step 3).
 
 - [ ] **Step 3: Build (expect error)**
 

@@ -122,19 +122,19 @@ Also includes an `isValid` computed property for form validation:
 - `.oneTime` requires `scheduledDate != nil`
 
 ### `Store/PersistenceManager.swift`
-A plain struct with two static functions (no state, no init needed):
+A plain struct with two static functions and a `defaultURL` constant (no state, no init needed). Both functions accept an injectable URL parameter (defaults to `defaultURL`) so tests can use a temp file:
 
-- `static func load() -> [Reminder]`
-  - Resolves path: `~/Library/Application Support/Ripple/reminders.json`
+- `static let defaultURL: URL` — resolves to `~/Library/Application Support/Ripple/reminders.json`
+
+- `static func load(from url: URL = defaultURL) -> [Reminder]`
   - If file does not exist, returns `[]`
   - Reads file data, decodes `[Reminder]` with `JSONDecoder`
   - On decode failure, logs error and returns `[]` (never crashes)
 
-- `static func save(_ reminders: [Reminder])`
-  - Resolves same path
+- `static func save(_ reminders: [Reminder], to url: URL = defaultURL)`
   - Creates the `Ripple/` directory if it does not exist (`FileManager.createDirectory`)
-  - Encodes `[Reminder]` with `JSONEncoder` (`.prettyPrinted` for readability during development)
-  - Writes to file, overwriting any existing file
+  - Encodes `[Reminder]` with `JSONEncoder`
+  - Writes to file atomically, overwriting any existing file
 
 ### `Store/ReminderStore.swift`
 An `@Observable` class that is the single source of truth for reminder data:

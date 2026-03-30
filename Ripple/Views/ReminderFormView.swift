@@ -46,7 +46,7 @@ struct ReminderFormView: View {
             _customIntervalText = State(initialValue: "\(interval)")
         }
 
-        _activeHoursEnabled = State(initialValue: reminder?.activeHoursStart != nil)
+        _activeHoursEnabled = State(initialValue: reminder?.activeHoursStart != nil || reminder == nil)
         _activeHoursStart = State(initialValue: reminder?.activeHoursStart ?? 540)
         _activeHoursEnd = State(initialValue: reminder?.activeHoursEnd ?? 1020)
         _activeDays = State(initialValue: reminder?.activeDays ?? Set(Weekday.allCases))
@@ -91,6 +91,8 @@ struct ReminderFormView: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 8)
+
+            Spacer()
 
             Divider()
             footerSection

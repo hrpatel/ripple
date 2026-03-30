@@ -101,11 +101,13 @@ protocol DeliveryManagerProtocol {
 
 - Requests `UNUserNotificationCenter` authorization (`.alert`, `.sound`) on `AppDelegate.applicationDidFinishLaunching`, before the engine starts
 - Registers a `UNNotificationCategory` with identifier `"REMINDER"` containing a single `UNNotificationAction` with identifier `"SNOOZE"` and title `"Snooze"` (only attached to requests where `reminder.snoozeEnabled == true`)
+- Before sending, checks `UNUserNotificationCenter.getNotificationSettings()`. If `authorizationStatus == .denied`, calls `onNotificationsBlocked()` instead of sending
 - Fires a `UNNotificationRequest` with:
   - `identifier`: reminder's UUID string (deduplicates concurrent delivery)
   - `title`: reminder's `title`
-  - `categoryIdentifier`: `"REMINDER"` if snooze enabled, else `""`
+  - `categoryIdentifier`: `"REMINDER"` if snooze enabled, else omitted
 - Implements `UNUserNotificationCenterDelegate` to receive the snooze action response and invoke the `onSnooze` callback
+- Also implements `willPresent` delegate to show banners and play sounds when the app is in the foreground
 
 ### Sound (`delivery.sound == true`)
 
@@ -118,10 +120,16 @@ Holds a `weak var statusButton: NSStatusBarButton?`. Alternates the button image
 ### Wiring in AppDelegate
 
 ```swift
-let delivery = DeliveryManager(statusButton: statusItem.button, onSnooze: engine.snooze)
+delivery = DeliveryManager(
+    statusButton: statusItem.button,
+    onSnooze: { [weak self] id in self?.engine.snooze(id) },
+    onNotificationsBlocked: { [weak self] in
+        DispatchQueue.main.async { self?.store.notificationsBlocked = true }
+    }
+)
 ```
 
-`AppDelegate` calls `UNUserNotificationCenter.current().requestAuthorization` once in `applicationDidFinishLaunching` before starting the engine.
+`AppDelegate` calls `delivery.requestAuthorization()` once after creating the `DeliveryManager`, before starting the engine.
 
 ---
 

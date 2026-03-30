@@ -496,10 +496,16 @@
   final class DeliveryManager: NSObject, DeliveryManagerProtocol {
       private weak var statusButton: NSStatusBarButton?
       private let onSnooze: (UUID) -> Void
+      private let onNotificationsBlocked: () -> Void
 
-      init(statusButton: NSStatusBarButton?, onSnooze: @escaping (UUID) -> Void) {
+      init(
+          statusButton: NSStatusBarButton?,
+          onSnooze: @escaping (UUID) -> Void,
+          onNotificationsBlocked: @escaping () -> Void
+      ) {
           self.statusButton = statusButton
           self.onSnooze = onSnooze
+          self.onNotificationsBlocked = onNotificationsBlocked
           super.init()
           UNUserNotificationCenter.current().delegate = self
       }
@@ -517,7 +523,13 @@
 
       func deliver(_ reminder: Reminder) {
           if reminder.delivery.notification {
-              sendNotification(for: reminder)
+              UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+                  if settings.authorizationStatus == .denied {
+                      self?.onNotificationsBlocked()
+                  } else {
+                      self?.sendNotification(for: reminder)
+                  }
+              }
           }
           if reminder.delivery.sound {
               NSSound(named: .init("Glass"))?.play()
@@ -637,9 +649,15 @@
       }
 
       private func setupScheduler() {
-          delivery = DeliveryManager(statusButton: statusItem.button) { [weak self] id in
-              self?.engine.snooze(id)
-          }
+          delivery = DeliveryManager(
+              statusButton: statusItem.button,
+              onSnooze: { [weak self] id in
+                  self?.engine.snooze(id)
+              },
+              onNotificationsBlocked: { [weak self] in
+                  DispatchQueue.main.async { self?.store.notificationsBlocked = true }
+              }
+          )
           delivery.requestAuthorization()
           engine = SchedulerEngine(store: store, delivery: delivery)
           engine.start()

@@ -69,7 +69,7 @@ For one-time reminders:
 
 ### Next Trigger Calculation
 Add a `nextFireDate(for:)` method to `SchedulerEngine`:
-- **Recurring:** `lastFired[id] + intervalMinutes`. If never fired, next trigger is now (will fire on next tick). If outside active hours/days, advance to the next valid window.
+- **Recurring:** `lastFired[id] + intervalMinutes`. If never fired, next trigger is now (will fire on next tick). Does not account for active hours/days — returns the raw interval-based time.
 - **One-time:** returns `scheduledDate` if still enabled, `nil` if already fired.
 - **Paused:** returns `nil`.
 

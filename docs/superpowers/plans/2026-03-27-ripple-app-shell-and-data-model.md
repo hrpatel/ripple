@@ -4,7 +4,7 @@
 
 **Goal:** Build a menubar-only macOS app shell with a bell icon and popover panel, backed by a data layer that persists reminders as JSON on disk.
 
-**Architecture:** AppDelegate owns NSStatusItem (menubar icon) and NSPopover (panel), and creates ReminderStore directly. ReminderStore is injected into SwiftUI views via `.environmentObject()`. PersistenceManager is a stateless utility that reads/writes a JSON file in Application Support and accepts an injectable URL so it can be unit tested.
+**Architecture:** AppDelegate owns NSStatusItem (menubar icon) and NSPopover (panel), and creates ReminderStore directly. ReminderStore is injected into SwiftUI views via `.environment()` (Swift Observation). PersistenceManager is a stateless utility that reads/writes a JSON file in Application Support and accepts an injectable URL so it can be unit tested.
 
 **Tech Stack:** Swift 5.9+, SwiftUI, AppKit (NSStatusItem, NSPopover, NSHostingController), Foundation (FileManager, JSONEncoder/Decoder), XCTest for unit tests.
 
@@ -141,7 +141,7 @@ AppDelegate handles all AppKit work: creates the menubar icon, creates the popov
       }
 
       private func setupMenubarIcon() {
-          statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+          statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
           if let button = statusItem.button {
               button.image = NSImage(systemSymbolName: "bell.fill", accessibilityDescription: "Ripple")
               button.action = #selector(togglePopover)
@@ -154,11 +154,11 @@ AppDelegate handles all AppKit work: creates the menubar icon, creates the popov
           popover.contentSize = NSSize(width: 320, height: 400)
           popover.behavior = .transient
           popover.contentViewController = NSHostingController(
-              rootView: ContentView().environmentObject(store)
+              rootView: ContentView().environment(store)
           )
       }
 
-      @objc func togglePopover() {
+      @objc private func togglePopover() {
           guard let button = statusItem.button else { return }
           if popover.isShown {
               popover.performClose(nil)
@@ -170,7 +170,7 @@ AppDelegate handles all AppKit work: creates the menubar icon, creates the popov
   }
   ```
 
-  > Note: `ReminderStore` doesn't exist yet — Xcode will show an error until Task 8. That's expected.
+  > Note: `ReminderStore` doesn't exist yet — Xcode will show an error until Task 8. That's expected. The `SchedulerEngine` environment and `engine` property are added later in the scheduling engine step (Step 3).
 
 - [ ] **Step 3: Build (expect error)**
 
@@ -240,9 +240,9 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
       var type: ReminderType
       var intervalMinutes: Int?
       var scheduledDate: Date?
-      var activeHoursStart: Date?
-      var activeHoursEnd: Date?
-      var activeDays: Set<Weekday>
+      var activeHoursStart: Int?  // minutes since midnight, e.g. 540 = 09:00
+      var activeHoursEnd: Int?    // minutes since midnight, e.g. 1020 = 17:00
+      var activeDays: Set<Weekday>?
       var isEnabled: Bool
       var delivery: DeliveryOptions
       var snoozeEnabled: Bool
@@ -259,8 +259,19 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
       var menubarIconFlash: Bool
   }
 
+  /// Monday = 1. Note: this differs from `Calendar.weekday` (where Sunday = 1).
+  /// Use `Weekday.rawValue` only for persistence; convert explicitly when comparing with Calendar.
   enum Weekday: Int, Codable, CaseIterable {
       case mon = 1, tue, wed, thu, fri, sat, sun
+  }
+
+  extension Reminder {
+      var isValid: Bool {
+          switch type {
+          case .recurring: return intervalMinutes != nil
+          case .oneTime:   return scheduledDate != nil
+          }
+      }
   }
   ```
 
@@ -358,7 +369,7 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
               scheduledDate: nil,
               activeHoursStart: nil,
               activeHoursEnd: nil,
-              activeDays: [.mon, .wed],
+              activeDays: Set([.mon, .wed]),
               isEnabled: true,
               delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
               snoozeEnabled: false
@@ -376,7 +387,7 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
               id: UUID(), title: "First", type: .oneTime,
               intervalMinutes: nil, scheduledDate: nil,
               activeHoursStart: nil, activeHoursEnd: nil,
-              activeDays: [], isEnabled: true,
+              activeDays: nil, isEnabled: true,
               delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
               snoozeEnabled: false
           )
@@ -384,7 +395,7 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
               id: UUID(), title: "Second", type: .oneTime,
               intervalMinutes: nil, scheduledDate: nil,
               activeHoursStart: nil, activeHoursEnd: nil,
-              activeDays: [], isEnabled: true,
+              activeDays: nil, isEnabled: true,
               delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
               snoozeEnabled: false
           )
@@ -543,7 +554,7 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
               scheduledDate: nil,
               activeHoursStart: nil,
               activeHoursEnd: nil,
-              activeDays: [.mon],
+              activeDays: Set([.mon]),
               isEnabled: true,
               delivery: DeliveryOptions(notification: true, sound: false, menubarIconFlash: false),
               snoozeEnabled: false
@@ -568,10 +579,12 @@ Replace the default "Hello, World!" view with a fixed-size placeholder that matc
 
   ```swift
   import Foundation
-  import Combine
+  import Observation
 
-  final class ReminderStore: ObservableObject {
-      @Published var reminders: [Reminder]
+  @Observable
+  final class ReminderStore {
+      var reminders: [Reminder]
+      var notificationsBlocked = false
       private let persistenceURL: URL
 
       init(persistenceURL: URL = PersistenceManager.defaultURL) {

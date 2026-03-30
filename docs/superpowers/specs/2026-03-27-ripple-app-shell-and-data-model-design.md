@@ -20,12 +20,12 @@ RippleApp (@main)
  └── @NSApplicationDelegateAdaptor → AppDelegate
       ├── NSStatusItem  (menubar icon — bell SF Symbol)
       ├── NSPopover     (dropdown panel, 320×400)
-      └── ReminderStore (@StateObject, injected via .environmentObject)
+      └── ReminderStore (@Observable, injected via .environment)
            ├── [Reminder]          (in-memory array)
            └── PersistenceManager  (read/write JSON to Application Support)
 ```
 
-**Approach:** SwiftUI `@main` App struct with `NSApplicationDelegateAdaptor`. AppKit concerns (status item, popover lifecycle) live in `AppDelegate`. SwiftUI concerns (views, data bindings) use the environment system.
+**Approach:** SwiftUI `@main` App struct with `NSApplicationDelegateAdaptor`. AppKit concerns (status item, popover lifecycle) live in `AppDelegate`. SwiftUI concerns (views, data bindings) use the Swift Observation framework (`@Observable`) and `.environment()` injection.
 
 ---
 
@@ -33,13 +33,13 @@ RippleApp (@main)
 
 ```
 Ripple/
-  RippleApp.swift             — @main entry; wires in AppDelegate and ReminderStore
-  AppDelegate.swift           — NSStatusItem + NSPopover setup and toggle logic
+  RippleApp.swift             — @main entry; wires in AppDelegate
+  AppDelegate.swift           — NSStatusItem + NSPopover setup, owns ReminderStore
   ContentView.swift           — Placeholder SwiftUI root view (320×400)
   Models/
     Reminder.swift            — All model structs and enums
   Store/
-    ReminderStore.swift       — @MainActor ObservableObject; CRUD + auto-save
+    ReminderStore.swift       — @Observable class; CRUD + auto-save
     PersistenceManager.swift  — JSON encode/decode to ~/Library/Application Support/Ripple/
 ```
 
@@ -53,19 +53,18 @@ A running app with a bell icon in the menubar. Clicking it toggles a small panel
 ### `RippleApp.swift`
 - Standard `@main` SwiftUI App struct
 - Declares `@NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate`
-- Creates `@StateObject var store = ReminderStore()`
-- No `WindowGroup` — the body is `Settings {}` (an empty scene, required by SwiftUI but unused)
-- Injects `store` into the environment so `AppDelegate` can pass it to the popover
+- No `WindowGroup` — the body is `Settings { EmptyView() }` (an empty scene, required by SwiftUI but unused)
+- `AppDelegate` creates and owns the `ReminderStore` directly
 
 ### `AppDelegate.swift`
 - Conforms to `NSObject, NSApplicationDelegate`
 - On `applicationDidFinishLaunching`:
-  - Creates `NSStatusItem` with a fixed length
+  - Creates `NSStatusItem` with a square length
   - Sets the status button image to `NSImage(systemSymbolName: "bell.fill", ...)`
   - Creates `NSPopover`, sets `contentSize` to `320×400`, `behavior` to `.transient` (clicking outside closes it)
-  - Sets `contentViewController` to an `NSHostingController` wrapping `ContentView()`
+  - Sets `contentViewController` to an `NSHostingController` wrapping `ContentView()` with `.environment(store)` and `.environment(\.schedulerEngine, engine)`
   - Attaches a click target to the status button that calls `togglePopover()`
-- `togglePopover()` — if popover is shown, closes it; otherwise shows it relative to the status button
+- `togglePopover()` — if popover is shown, closes it; otherwise shows it relative to the status button; makes the popover window key so it receives keyboard focus
 
 ### `ContentView.swift`
 - Placeholder only: a `VStack` containing `Text("Hello, Ripple!")`, fixed frame `320×400`
@@ -86,7 +85,7 @@ A running app with a bell icon in the menubar. Clicking it toggles a small panel
 Reminders are defined, stored in memory, and survive app restarts via a JSON file on disk.
 
 ### `Models/Reminder.swift`
-Exact structs from the project brief — no changes:
+Based on the project brief with refinements — active hours use `Int?` (minutes since midnight) instead of `Date?` for simpler comparison logic, and `activeDays` is optional (nil = every day):
 
 ```swift
 struct Reminder: Identifiable, Codable {
@@ -95,9 +94,9 @@ struct Reminder: Identifiable, Codable {
     var type: ReminderType
     var intervalMinutes: Int?
     var scheduledDate: Date?
-    var activeHoursStart: Date?
-    var activeHoursEnd: Date?
-    var activeDays: Set<Weekday>
+    var activeHoursStart: Int?  // minutes since midnight, e.g. 540 = 09:00
+    var activeHoursEnd: Int?    // minutes since midnight, e.g. 1020 = 17:00
+    var activeDays: Set<Weekday>?
     var isEnabled: Bool
     var delivery: DeliveryOptions
     var snoozeEnabled: Bool
@@ -111,38 +110,45 @@ struct DeliveryOptions: Codable {
     var menubarIconFlash: Bool
 }
 
+/// Monday = 1. Note: this differs from `Calendar.weekday` (where Sunday = 1).
+/// Use `Weekday.rawValue` only for persistence; convert explicitly when comparing with Calendar.
 enum Weekday: Int, Codable, CaseIterable {
     case mon=1, tue, wed, thu, fri, sat, sun
 }
 ```
 
-### `Store/PersistenceManager.swift`
-A plain struct with two static functions (no state, no init needed):
+Also includes an `isValid` computed property for form validation:
+- `.recurring` requires `intervalMinutes != nil`
+- `.oneTime` requires `scheduledDate != nil`
 
-- `static func load() -> [Reminder]`
-  - Resolves path: `~/Library/Application Support/Ripple/reminders.json`
+### `Store/PersistenceManager.swift`
+A plain struct with two static functions and a `defaultURL` constant (no state, no init needed). Both functions accept an injectable URL parameter (defaults to `defaultURL`) so tests can use a temp file:
+
+- `static let defaultURL: URL` — resolves to `~/Library/Application Support/Ripple/reminders.json`
+
+- `static func load(from url: URL = defaultURL) -> [Reminder]`
   - If file does not exist, returns `[]`
   - Reads file data, decodes `[Reminder]` with `JSONDecoder`
   - On decode failure, logs error and returns `[]` (never crashes)
 
-- `static func save(_ reminders: [Reminder])`
-  - Resolves same path
+- `static func save(_ reminders: [Reminder], to url: URL = defaultURL)`
   - Creates the `Ripple/` directory if it does not exist (`FileManager.createDirectory`)
-  - Encodes `[Reminder]` with `JSONEncoder` (`.prettyPrinted` for readability during development)
-  - Writes to file, overwriting any existing file
+  - Encodes `[Reminder]` with `JSONEncoder`
+  - Writes to file atomically, overwriting any existing file
 
 ### `Store/ReminderStore.swift`
-An `@MainActor` `ObservableObject` that is the single source of truth for reminder data:
+An `@Observable` class that is the single source of truth for reminder data:
 
-- `@Published var reminders: [Reminder]`
-- `init()` — calls `PersistenceManager.load()` and assigns the result to `reminders`
+- `var reminders: [Reminder]`
+- `var notificationsBlocked = false` — transient flag set when notification permission is denied (not persisted)
+- `init(persistenceURL:)` — accepts an injectable URL (defaults to `PersistenceManager.defaultURL`) for testability; calls `PersistenceManager.load(from:)` and assigns the result to `reminders`
 - `func add(_ reminder: Reminder)` — appends to array, calls `save()`
 - `func update(_ reminder: Reminder)` — replaces the element with matching `id`, calls `save()`
 - `func delete(_ reminder: Reminder)` — removes the element with matching `id`, calls `save()`
 - Private `save()` — calls `PersistenceManager.save(reminders)`
 
 ### Wiring into the App
-In `RippleApp.swift`, the `ReminderStore` is created as a `@StateObject`. Because `AppDelegate` is initialized by the system (not by us), we can't pass `store` via a normal init parameter. Instead, we give `AppDelegate` a `var store: ReminderStore?` property, and in `RippleApp.body` we set `appDelegate.store = store` so the delegate has a reference to it. The delegate then passes `store` into `ContentView` via `.environmentObject(store)` on the `NSHostingController`, making it available to all SwiftUI views inside the popover.
+`AppDelegate` creates `ReminderStore` directly as a stored property (`var store = ReminderStore()`). It then passes `store` into `ContentView` via `.environment(store)` on the `NSHostingController`, making it available to all SwiftUI views inside the popover. Views access it with `@Environment(ReminderStore.self) var store`.
 
 ### Success Criteria
 - App compiles with all model types defined

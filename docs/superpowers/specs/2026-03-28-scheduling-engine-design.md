@@ -75,9 +75,10 @@ When the user taps "Snooze" on a notification, `DeliveryManager` receives the `U
 ```swift
 final class SchedulerEngine {
     init(store: ReminderStore, delivery: DeliveryManagerProtocol, now: @escaping () -> Date = Date.init)
-    func start()            // starts the 60-second Timer
-    func stop()             // invalidates the Timer
-    func snooze(_ id: UUID) // called by DeliveryManager via onSnooze callback
+    func start()                              // starts the 60-second Timer
+    func stop()                               // invalidates the Timer
+    func snooze(_ id: UUID)                   // called by DeliveryManager via onSnooze callback
+    func nextFireDate(for: Reminder) -> Date? // used by detail view to show next trigger time
 }
 ```
 
@@ -101,11 +102,13 @@ protocol DeliveryManagerProtocol {
 
 - Requests `UNUserNotificationCenter` authorization (`.alert`, `.sound`) on `AppDelegate.applicationDidFinishLaunching`, before the engine starts
 - Registers a `UNNotificationCategory` with identifier `"REMINDER"` containing a single `UNNotificationAction` with identifier `"SNOOZE"` and title `"Snooze"` (only attached to requests where `reminder.snoozeEnabled == true`)
+- Before sending, checks `UNUserNotificationCenter.getNotificationSettings()`. If `authorizationStatus == .denied`, calls `onNotificationsBlocked()` instead of sending
 - Fires a `UNNotificationRequest` with:
   - `identifier`: reminder's UUID string (deduplicates concurrent delivery)
   - `title`: reminder's `title`
-  - `categoryIdentifier`: `"REMINDER"` if snooze enabled, else `""`
+  - `categoryIdentifier`: `"REMINDER"` if snooze enabled, else omitted
 - Implements `UNUserNotificationCenterDelegate` to receive the snooze action response and invoke the `onSnooze` callback
+- Also implements `willPresent` delegate to show banners and play sounds when the app is in the foreground
 
 ### Sound (`delivery.sound == true`)
 
@@ -118,10 +121,16 @@ Holds a `weak var statusButton: NSStatusBarButton?`. Alternates the button image
 ### Wiring in AppDelegate
 
 ```swift
-let delivery = DeliveryManager(statusButton: statusItem.button, onSnooze: engine.snooze)
+delivery = DeliveryManager(
+    statusButton: statusItem.button,
+    onSnooze: { [weak self] id in self?.engine.snooze(id) },
+    onNotificationsBlocked: { [weak self] in
+        DispatchQueue.main.async { self?.store.notificationsBlocked = true }
+    }
+)
 ```
 
-`AppDelegate` calls `UNUserNotificationCenter.current().requestAuthorization` once in `applicationDidFinishLaunching` before starting the engine.
+`AppDelegate` calls `delivery.requestAuthorization()` once after creating the `DeliveryManager`, before starting the engine.
 
 ---
 
@@ -140,6 +149,10 @@ All tests in `SchedulerEngineTests.swift` use an injected `now` closure and a re
 | `test_recurring_firesAfterSnoozeExpires` | fires again once snooze window passes |
 | `test_oneTime_firesAndDisables` | fires once and sets `isEnabled = false` |
 | `test_disabled_neverFires` | skips `isEnabled == false` reminders |
+| `test_nextFireDate_recurring_neverFired` | returns now if never fired |
+| `test_nextFireDate_recurring_afterFire` | returns lastFired + interval |
+| `test_nextFireDate_oneTime` | returns scheduledDate |
+| `test_nextFireDate_disabled_returnsNil` | returns nil for disabled reminder |
 
 `DeliveryManager` itself is not unit tested — it wraps system APIs (`UNUserNotificationCenter`, `NSSound`, `NSStatusBarButton`) that require a running app environment.
 

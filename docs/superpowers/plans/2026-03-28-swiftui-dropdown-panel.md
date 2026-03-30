@@ -541,7 +541,7 @@
                       }
                   }
           }
-          .frame(minWidth: 320, minHeight: 400)
+          .frame(minWidth: 320, minHeight: 480)
       }
   }
   ```

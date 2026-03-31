@@ -70,7 +70,7 @@ struct ReminderFormView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.blue)
                 Spacer()
-                Text(isEditing ? "Edit Reminder" : "Add Reminder")
+                Text(isEditing ? (reminderToEdit?.title ?? "Edit Reminder") : "Add Reminder")
                     .font(.headline)
                 Spacer()
             }
@@ -78,21 +78,23 @@ struct ReminderFormView: View {
             .padding(.top, 10)
             .padding(.bottom, 6)
 
-            VStack(alignment: .leading, spacing: 10) {
-                titleSection
-                typeSection
-                if type == .recurring {
-                    recurringSection
-                } else {
-                    oneTimeSection
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    titleSection
+                    typeSection
+                    if type == .recurring {
+                        recurringSection
+                    } else {
+                        oneTimeSection
+                    }
+                    deliverySection
+                    snoozeSection
                 }
-                deliverySection
-                snoozeSection
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                .animation(.easeInOut(duration: 0.3), value: type)
+                .animation(.easeInOut(duration: 0.3), value: activeHoursEnabled)
             }
-            .padding(.horizontal)
-            .padding(.bottom, 8)
-
-            Spacer()
 
             Divider()
             footerSection

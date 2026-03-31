@@ -73,7 +73,6 @@ struct ReminderListView: View {
             .padding(.top, 8)
             .padding(.bottom, 8)
 
-            // List or empty state
             if filteredReminders.isEmpty {
                 Spacer()
                 Text(emptyMessage)
@@ -81,16 +80,22 @@ struct ReminderListView: View {
                     .font(.subheadline)
                 Spacer()
             } else {
-                List(filteredReminders) { reminder in
-                    NavigationLink(value: RippleDestination.detail(reminder.id)) {
-                        ReminderRowView(reminder: reminder) { newValue in
-                            var updated = reminder
-                            updated.isEnabled = newValue
-                            store.update(updated)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(filteredReminders) { reminder in
+                            NavigationLink(value: RippleDestination.detail(reminder.id)) {
+                                ReminderRowView(reminder: reminder, onToggle: { newValue in
+                                    var updated = reminder
+                                    updated.isEnabled = newValue
+                                    store.update(updated)
+                                })
+                            }
+                            .buttonStyle(.plain)
+                            Divider()
                         }
                     }
                 }
-                .listStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
             }
 
             Divider()

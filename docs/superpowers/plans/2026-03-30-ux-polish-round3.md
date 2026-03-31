@@ -114,7 +114,7 @@ git commit -m "fix: dynamic popover resizing instead of fixed scrolling list"
 
 - [ ] **Step 1: Update ReminderRowView to accept onEdit and onDelete callbacks and add icons**
 
-Replace the full `ReminderRowView` body with:
+Replace the full `ReminderRowView` struct and its previews with:
 
 ```swift
 import SwiftUI
@@ -183,6 +183,28 @@ struct ReminderRowView: View {
         }
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Enabled Recurring") {
+    ReminderRowView(reminder: .sampleRecurring, onToggle: { _ in }, onEdit: {}, onDelete: {})
+        .frame(width: 320)
+        .padding()
+}
+
+#Preview("Enabled One-Time") {
+    ReminderRowView(reminder: .sampleOneTime, onToggle: { _ in }, onEdit: {}, onDelete: {})
+        .frame(width: 320)
+        .padding()
+}
+
+#Preview("Paused") {
+    ReminderRowView(reminder: .samplePaused, onToggle: { _ in }, onEdit: {}, onDelete: {})
+        .frame(width: 320)
+        .padding()
+}
+#endif
 ```
 
 - [ ] **Step 2: Update ReminderListView to pass onEdit and onDelete**
@@ -238,6 +260,36 @@ Then update `onEdit` in the `ForEach` to navigate:
                                     onEdit: {
                                         path.append(RippleDestination.form(reminder.id))
                                     },
+```
+
+Also update the `#Preview` blocks at the bottom of `ReminderListView.swift` to pass the new `path` binding:
+
+```swift
+#if DEBUG
+#Preview("With Reminders") {
+    NavigationStack {
+        ReminderListView(path: .constant(NavigationPath()))
+    }
+    .environment(previewStore())
+    .frame(width: 320)
+}
+
+#Preview("Empty") {
+    NavigationStack {
+        ReminderListView(path: .constant(NavigationPath()))
+    }
+    .environment(previewStore(reminders: []))
+    .frame(width: 320)
+}
+
+#Preview("Notifications Blocked") {
+    NavigationStack {
+        ReminderListView(path: .constant(NavigationPath()))
+    }
+    .environment(previewStoreBlocked())
+    .frame(width: 320)
+}
+#endif
 ```
 
 - [ ] **Step 4: Build and verify**

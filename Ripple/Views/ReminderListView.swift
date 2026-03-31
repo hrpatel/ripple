@@ -62,13 +62,6 @@ struct ReminderListView: View {
 
             Divider()
 
-            // Filter
-            Text("Filter")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .padding(.horizontal)
-                .padding(.top, 8)
-
             Picker("Filter", selection: $selectedFilter) {
                 ForEach(ReminderFilter.allCases, id: \.self) { filter in
                     Text(filter.rawValue).tag(filter)
@@ -77,6 +70,7 @@ struct ReminderListView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(.horizontal)
+            .padding(.top, 8)
             .padding(.bottom, 8)
 
             // List or empty state

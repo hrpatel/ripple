@@ -45,19 +45,19 @@ struct ReminderRowView: View {
 
 #if DEBUG
 #Preview("Enabled Recurring") {
-    ReminderRowView(reminder: .sampleRecurring) { _ in }
+    ReminderRowView(reminder: .sampleRecurring, onToggle: { _ in })
         .frame(width: 320)
         .padding()
 }
 
 #Preview("Enabled One-Time") {
-    ReminderRowView(reminder: .sampleOneTime) { _ in }
+    ReminderRowView(reminder: .sampleOneTime, onToggle: { _ in })
         .frame(width: 320)
         .padding()
 }
 
 #Preview("Paused") {
-    ReminderRowView(reminder: .samplePaused) { _ in }
+    ReminderRowView(reminder: .samplePaused, onToggle: { _ in })
         .frame(width: 320)
         .padding()
 }

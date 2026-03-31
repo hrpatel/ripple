@@ -9,6 +9,7 @@ enum ReminderFilter: String, CaseIterable {
 
 struct ReminderListView: View {
     @Environment(ReminderStore.self) var store
+    @Binding var path: NavigationPath
     @State private var selectedFilter: ReminderFilter = .all
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
@@ -83,14 +84,11 @@ struct ReminderListView: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         ForEach(filteredReminders) { reminder in
-                            NavigationLink(value: RippleDestination.detail(reminder.id)) {
-                                ReminderRowView(reminder: reminder, onToggle: { newValue in
-                                    var updated = reminder
-                                    updated.isEnabled = newValue
-                                    store.update(updated)
-                                })
-                            }
-                            .buttonStyle(.plain)
+                            ReminderRowItem(
+                                reminder: reminder,
+                                store: store,
+                                path: $path
+                            )
                             Divider()
                         }
                     }
@@ -124,12 +122,61 @@ struct ReminderListView: View {
     }
 }
 
+// MARK: - Row Item (separates NavigationLink from action buttons)
+
+private struct ReminderRowItem: View {
+    let reminder: Reminder
+    let store: ReminderStore
+    @Binding var path: NavigationPath
+
+    @State private var showDeleteConfirmation = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            NavigationLink(value: RippleDestination.detail(reminder.id)) {
+                ReminderRowView(
+                    reminder: reminder,
+                    onToggle: { newValue in
+                        var updated = reminder
+                        updated.isEnabled = newValue
+                        store.update(updated)
+                    }
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button(action: {
+                path.append(RippleDestination.form(reminder.id))
+            }) {
+                Image(systemName: "pencil")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+
+            Button(action: { showDeleteConfirmation = true }) {
+                Image(systemName: "xmark")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal)
+        .alert("Delete Reminder", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) { store.delete(reminder) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to delete \"\(reminder.title)\"?")
+        }
+    }
+}
+
 // MARK: - Previews
 
 #if DEBUG
 #Preview("With Reminders") {
     NavigationStack {
-        ReminderListView()
+        ReminderListView(path: .constant(NavigationPath()))
     }
     .environment(previewStore())
     .frame(width: 320)
@@ -137,7 +184,7 @@ struct ReminderListView: View {
 
 #Preview("Empty") {
     NavigationStack {
-        ReminderListView()
+        ReminderListView(path: .constant(NavigationPath()))
     }
     .environment(previewStore(reminders: []))
     .frame(width: 320)
@@ -145,7 +192,7 @@ struct ReminderListView: View {
 
 #Preview("Notifications Blocked") {
     NavigationStack {
-        ReminderListView()
+        ReminderListView(path: .constant(NavigationPath()))
     }
     .environment(previewStoreBlocked())
     .frame(width: 320)

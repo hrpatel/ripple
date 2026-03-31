@@ -9,7 +9,6 @@
 
 ## 1.0.0 (2026-03-31)
 
-
 ### Features
 
 * add active hours, active days, and disabled checks to SchedulerEngine ([1856a11](https://github.com/hrpatel/ripple/commit/1856a11adf8aad16d419760f638800f7acc00d15))
@@ -64,4 +63,5 @@
 
 
 ### Breaking
-- Reminder JSON format changed (`snoozeEnabled` replaced by `snoozeDurationMinutes`) — existing saved reminders will be reset on first launch
+
+* Reminder JSON format changed (`snoozeEnabled` replaced by `snoozeDurationMinutes`) — existing saved reminders will be reset on first launch

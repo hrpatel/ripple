@@ -97,19 +97,29 @@ struct ReminderListView: View {
             }
 
             Divider()
-            Toggle("Launch at login", isOn: $launchAtLogin)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .onChange(of: launchAtLogin) { _, newValue in
-                    if newValue {
-                        try? SMAppService.mainApp.register()
-                    } else {
-                        try? SMAppService.mainApp.unregister()
-                    }
+            HStack {
+                Text("Launch at login")
+                Spacer()
+                if launchAtLogin {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.blue)
+                        .fontWeight(.medium)
                 }
-                .onAppear {
-                    launchAtLogin = SMAppService.mainApp.status == .enabled
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                launchAtLogin.toggle()
+                if launchAtLogin {
+                    try? SMAppService.mainApp.register()
+                } else {
+                    try? SMAppService.mainApp.unregister()
                 }
+            }
+            .onAppear {
+                launchAtLogin = SMAppService.mainApp.status == .enabled
+            }
         }
     }
 

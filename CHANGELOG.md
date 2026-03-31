@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/hrpatel/ripple/compare/v1.0.0...v1.0.1) (2026-03-31)
+
+
+### Bug Fixes
+
+* prevent one-time reminders from being set in the past ([fe3b51a](https://github.com/hrpatel/ripple/commit/fe3b51add2ebc67282b9ce459f0f46b6792991c4))
+
 ## 1.0.0 (2026-03-31)
 
 

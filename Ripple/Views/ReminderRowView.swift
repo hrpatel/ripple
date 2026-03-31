@@ -40,3 +40,25 @@ struct ReminderRowView: View {
         .padding(.vertical, 4)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Enabled Recurring") {
+    ReminderRowView(reminder: .sampleRecurring) { _ in }
+        .frame(width: 320)
+        .padding()
+}
+
+#Preview("Enabled One-Time") {
+    ReminderRowView(reminder: .sampleOneTime) { _ in }
+        .frame(width: 320)
+        .padding()
+}
+
+#Preview("Paused") {
+    ReminderRowView(reminder: .samplePaused) { _ in }
+        .frame(width: 320)
+        .padding()
+}
+#endif

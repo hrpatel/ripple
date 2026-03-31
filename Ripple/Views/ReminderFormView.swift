@@ -365,3 +365,31 @@ struct ReminderFormView: View {
         return String(format: "%d:%02d %@", displayH, m, period)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Add New") {
+    NavigationStack {
+        ReminderFormView(path: .constant(NavigationPath()))
+    }
+    .environment(previewStore())
+    .frame(width: 320)
+}
+
+#Preview("Edit Recurring") {
+    NavigationStack {
+        ReminderFormView(reminder: .sampleRecurring, path: .constant(NavigationPath()))
+    }
+    .environment(previewStore())
+    .frame(width: 320)
+}
+
+#Preview("Edit One-Time") {
+    NavigationStack {
+        ReminderFormView(reminder: .sampleOneTime, path: .constant(NavigationPath()))
+    }
+    .environment(previewStore())
+    .frame(width: 320)
+}
+#endif

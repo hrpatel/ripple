@@ -3,11 +3,11 @@ import SwiftUI
 // MARK: - SchedulerEngine EnvironmentKey
 
 struct SchedulerEngineKey: EnvironmentKey {
-    static let defaultValue: SchedulerEngine? = nil
+    static let defaultValue: (any SchedulerEngineProtocol)? = nil
 }
 
 extension EnvironmentValues {
-    var schedulerEngine: SchedulerEngine? {
+    var schedulerEngine: (any SchedulerEngineProtocol)? {
         get { self[SchedulerEngineKey.self] }
         set { self[SchedulerEngineKey.self] = newValue }
     }
@@ -48,3 +48,13 @@ struct ContentView: View {
         .frame(minHeight: 200, maxHeight: 600)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Default") {
+    ContentView()
+        .environment(previewStore())
+        .environment(\.schedulerEngine, PreviewSchedulerEngine())
+}
+#endif

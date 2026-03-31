@@ -124,3 +124,31 @@ struct ReminderListView: View {
         }
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("With Reminders") {
+    NavigationStack {
+        ReminderListView()
+    }
+    .environment(previewStore())
+    .frame(width: 320)
+}
+
+#Preview("Empty") {
+    NavigationStack {
+        ReminderListView()
+    }
+    .environment(previewStore(reminders: []))
+    .frame(width: 320)
+}
+
+#Preview("Notifications Blocked") {
+    NavigationStack {
+        ReminderListView()
+    }
+    .environment(previewStoreBlocked())
+    .frame(width: 320)
+}
+#endif

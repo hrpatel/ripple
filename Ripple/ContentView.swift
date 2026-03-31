@@ -48,3 +48,13 @@ struct ContentView: View {
         .frame(minHeight: 200, maxHeight: 600)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Default") {
+    ContentView()
+        .environment(previewStore())
+        .environment(\.schedulerEngine, PreviewSchedulerEngine())
+}
+#endif

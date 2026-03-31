@@ -117,3 +117,25 @@ struct ReminderDetailView: View {
             .foregroundStyle(isActive ? .green : .secondary)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+#Preview("Recurring Detail") {
+    ReminderDetailView(reminder: .sampleRecurring)
+        .environment(\.schedulerEngine, PreviewSchedulerEngine())
+        .frame(width: 320)
+}
+
+#Preview("One-Time Detail") {
+    ReminderDetailView(reminder: .sampleOneTime)
+        .environment(\.schedulerEngine, PreviewSchedulerEngine())
+        .frame(width: 320)
+}
+
+#Preview("Paused Detail") {
+    ReminderDetailView(reminder: .samplePaused)
+        .environment(\.schedulerEngine, PreviewSchedulerEngine())
+        .frame(width: 320)
+}
+#endif

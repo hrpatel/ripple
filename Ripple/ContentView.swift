@@ -28,7 +28,7 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            ReminderListView()
+            ReminderListView(path: $path)
                 .navigationDestination(for: RippleDestination.self) { destination in
                     switch destination {
                     case .detail(let id):
@@ -45,7 +45,7 @@ struct ContentView: View {
                 }
         }
         .frame(width: 320)
-        .frame(minHeight: 200, maxHeight: 600)
+        .frame(maxHeight: 600)
     }
 }
 

@@ -9,6 +9,7 @@ enum ReminderFilter: String, CaseIterable {
 
 struct ReminderListView: View {
     @Environment(ReminderStore.self) var store
+    @Binding var path: NavigationPath
     @State private var selectedFilter: ReminderFilter = .all
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
@@ -62,13 +63,6 @@ struct ReminderListView: View {
 
             Divider()
 
-            // Filter
-            Text("Filter")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .padding(.horizontal)
-                .padding(.top, 8)
-
             Picker("Filter", selection: $selectedFilter) {
                 ForEach(ReminderFilter.allCases, id: \.self) { filter in
                     Text(filter.rawValue).tag(filter)
@@ -77,9 +71,9 @@ struct ReminderListView: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(.horizontal)
+            .padding(.top, 8)
             .padding(.bottom, 8)
 
-            // List or empty state
             if filteredReminders.isEmpty {
                 Spacer()
                 Text(emptyMessage)
@@ -87,32 +81,45 @@ struct ReminderListView: View {
                     .font(.subheadline)
                 Spacer()
             } else {
-                List(filteredReminders) { reminder in
-                    NavigationLink(value: RippleDestination.detail(reminder.id)) {
-                        ReminderRowView(reminder: reminder) { newValue in
-                            var updated = reminder
-                            updated.isEnabled = newValue
-                            store.update(updated)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(filteredReminders) { reminder in
+                            ReminderRowItem(
+                                reminder: reminder,
+                                store: store,
+                                path: $path
+                            )
+                            Divider()
                         }
                     }
                 }
-                .listStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
             }
 
             Divider()
-            Toggle("Launch at login", isOn: $launchAtLogin)
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .onChange(of: launchAtLogin) { _, newValue in
-                    if newValue {
-                        try? SMAppService.mainApp.register()
-                    } else {
-                        try? SMAppService.mainApp.unregister()
-                    }
+            HStack {
+                Text("Launch at login")
+                Spacer()
+                if launchAtLogin {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.blue)
+                        .fontWeight(.medium)
                 }
-                .onAppear {
-                    launchAtLogin = SMAppService.mainApp.status == .enabled
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                launchAtLogin.toggle()
+                if launchAtLogin {
+                    try? SMAppService.mainApp.register()
+                } else {
+                    try? SMAppService.mainApp.unregister()
                 }
+            }
+            .onAppear {
+                launchAtLogin = SMAppService.mainApp.status == .enabled
+            }
         }
     }
 
@@ -125,12 +132,61 @@ struct ReminderListView: View {
     }
 }
 
+// MARK: - Row Item (separates NavigationLink from action buttons)
+
+private struct ReminderRowItem: View {
+    let reminder: Reminder
+    let store: ReminderStore
+    @Binding var path: NavigationPath
+
+    @State private var showDeleteConfirmation = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            NavigationLink(value: RippleDestination.detail(reminder.id)) {
+                ReminderRowView(
+                    reminder: reminder,
+                    onToggle: { newValue in
+                        var updated = reminder
+                        updated.isEnabled = newValue
+                        store.update(updated)
+                    }
+                )
+            }
+            .buttonStyle(.plain)
+
+            Button(action: {
+                path.append(RippleDestination.form(reminder.id))
+            }) {
+                Image(systemName: "pencil")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+
+            Button(action: { showDeleteConfirmation = true }) {
+                Image(systemName: "xmark")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal)
+        .alert("Delete Reminder", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) { store.delete(reminder) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to delete \"\(reminder.title)\"?")
+        }
+    }
+}
+
 // MARK: - Previews
 
 #if DEBUG
 #Preview("With Reminders") {
     NavigationStack {
-        ReminderListView()
+        ReminderListView(path: .constant(NavigationPath()))
     }
     .environment(previewStore())
     .frame(width: 320)
@@ -138,7 +194,7 @@ struct ReminderListView: View {
 
 #Preview("Empty") {
     NavigationStack {
-        ReminderListView()
+        ReminderListView(path: .constant(NavigationPath()))
     }
     .environment(previewStore(reminders: []))
     .frame(width: 320)
@@ -146,7 +202,7 @@ struct ReminderListView: View {
 
 #Preview("Notifications Blocked") {
     NavigationStack {
-        ReminderListView()
+        ReminderListView(path: .constant(NavigationPath()))
     }
     .environment(previewStoreBlocked())
     .frame(width: 320)

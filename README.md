@@ -40,10 +40,10 @@ A lightweight macOS menubar app for setting and triggering one-time or recurring
 | Screen | Description |
 |--------|-------------|
 | Menubar icon | Bell with dot (`bell.badge.fill`) when any reminder is active; plain bell otherwise; flashes on trigger |
-| Popover panel | Dynamically sized; reminder list with Filter heading, All / Active / Paused tabs, "+ Add" button, and launch-at-login toggle |
+| Popover panel | Dynamically sized; reminder list with All / Active / Paused filter tabs, edit/delete icons per row, "+ Add" button, and launch-at-login checkmark |
 | Notification banner | Yellow warning when system notifications are blocked, with link to System Settings |
 | Detail view | Title, interval, active hours/days, next trigger, delivery method tags |
-| Add/Edit form | Full reminder configuration — type, interval, hours (default on), days, delivery, snooze; top-justified layout |
+| Add/Edit form | Full reminder configuration — type, interval, hours (default on), days, delivery, snooze; top-justified layout with smooth animations and pinned footer |
 | System notification | Title with optional "Snooze N min" action button (if snooze duration set) |
 
 ## Not Yet Implemented

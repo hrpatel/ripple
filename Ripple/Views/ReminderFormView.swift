@@ -214,7 +214,7 @@ struct ReminderFormView: View {
             Text("Date & Time")
                 .font(.subheadline)
                 .fontWeight(.medium)
-            DatePicker("", selection: $scheduledDate, displayedComponents: [.date, .hourAndMinute])
+            DatePicker("", selection: $scheduledDate, in: Date()..., displayedComponents: [.date, .hourAndMinute])
                 .labelsHidden()
         }
     }
@@ -301,7 +301,7 @@ struct ReminderFormView: View {
             if activeHoursEnabled && activeHoursStart == activeHoursEnd { return false }
             return true
         case .oneTime:
-            return true
+            return scheduledDate > Date()
         }
     }
 

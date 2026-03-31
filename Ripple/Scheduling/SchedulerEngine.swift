@@ -1,6 +1,10 @@
 import Foundation
 
-final class SchedulerEngine {
+protocol SchedulerEngineProtocol {
+    func nextFireDate(for reminder: Reminder) -> Date?
+}
+
+final class SchedulerEngine: SchedulerEngineProtocol {
     private let store: ReminderStore
     private let delivery: DeliveryManagerProtocol
     private let now: () -> Date
